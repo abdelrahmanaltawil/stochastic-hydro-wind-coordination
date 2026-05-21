@@ -197,6 +197,8 @@ Logic summary:
 
 ### 1.9 Tank-Link Status Check (Eq. 13 in Figure 5)
 
+> **Note**: In the codebase, this is implemented as `MILPNet Tank Inlet Auto-Shutoff Logic`.
+
 For each tank-link $tl$ with associated tank $tk$:
 
 **(W13) Energy balance:**
@@ -236,6 +238,8 @@ $$
 $$
 
 ### 1.10 Event-Based Control Rules (Eq. 14 in Figure 5)
+
+> **Note**: Not currently implemented in the codebase.
 
 For each control-link $cl$ paired with a tank $tk$ via levels $H_{ul}$ and $H_{ll}$:
 
@@ -283,6 +287,8 @@ $$
 Reading: link closes once $H_{tk} \geq H_{ul}$; stays closed until $H_{tk} \leq H_{ll}$; then re-opens.
 
 ### 1.11 Time-Based Control Rules (Eq. 15 in Figure 5)
+
+> **Note**: Not currently implemented in the codebase.
 
 For a control-link $cl$ with prescribed switch times $T_1 < T_2 < T_3 < \dots$:
 
@@ -418,6 +424,8 @@ The matrix product picks out electricity-producing/consuming technologies (e.g. 
 
 **(E2) Heat balance at each building $i$** (Eq. 2):
 
+> **Note**: Not currently implemented in the codebase.
+
 $$
 H_{i,t}^{load} = \mathbf{H}_{tech} \cdot \mathbf{P}_{tech}(i,t) + \eta_s^{dis} Q_{stor}^{dis}(i,t) - \eta_s^{ch} Q_{stor}^{ch}(i,t)
 $$
@@ -476,6 +484,8 @@ $$
 where building $i$ sits at bus $n$.
 
 **(E8) Nodal reactive power balance** (Eqs. 13, 15):
+
+> **Note**: Not currently implemented in the codebase.
 
 $$
 \sum_{m: (n,m) \in \mathcal{E}} Q\big((n,m), t\big) = QL_{i,t}^{load} - \sum_{c \in otr} P_{tech}^{gen}(i,t) + \sum_{c \in otr} P_{tech}^{con}(i,t)

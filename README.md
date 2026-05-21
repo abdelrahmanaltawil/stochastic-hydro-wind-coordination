@@ -6,46 +6,34 @@ This project contains a stochastic model for the daily coordination of pumped st
 
 ```
 ├── src/
-│   ├── optimization/             # Pyomo-based optimization
-│   │   ├── algorithm_tasks.py    # Model formulation & solving
-│   │   ├── preprocessing.py
-│   │   ├── postprocessing.py
-│   │   └── workflow.py
-│   └── water_distribution_simulation/  # WNTR-based simulation
-│       ├── algorithm_tasks.py    # Simulation execution
-│       ├── preprocessing.py
-│       ├── postprocessing.py
-│       └── workflow.py
-├── config/
-│   ├── optimization/
-│   └── water_distribution_simulation/
-│       └── simulation_config.yaml
+│   ├── algorithm_tasks.py    # Model formulation & solving
+│   ├── preprocessing.py
+│   ├── postprocessing.py
+│   ├── workflow.py           # Single entry point
+│   └── helpers/
+│       ├── utils.py
+│       ├── energy/
+│       └── water/
+├── data/
+│   ├── inputs/               # Config and network definitions
+│   └── results/              # Output from workflow
 ├── notebooks/
-│   ├── optimization/
-│   └── water_distribution_simulation/
-│       └── simulation_visualization.ipynb
+│   ├── energy_visualization.ipynb
+│   └── water_visualization.ipynb
 ├── doc/
-│   ├── optimization/
-│   │   └── theoretical_background.md
-│   └── water_distribution_simulation/
-│       └── pumping.md
-└── Data/
-    └── results/
+│   ├── capsules/
+│   └── theoretical_background.md
+└── tests/
 ```
 
 ## Usage
 
-### Optimization
+### Execution
+To run the full pipeline (data build, pyomo optimization, and extraction):
 ```bash
-python src/optimization/workflow.py
+python src/workflow.py
 ```
 > **Note**: This model uses complex hydraulic constraints (Piecewise Linear). While it is configured to run with `glpk` by default, a commercial solver like **Gurobi** or **CPLEX** is strongly recommended for production use to ensure convergence and performance.
-> **Note**: This model uses complex hydraulic constraints (Piecewise Linear). While it is configured to run with `glpk` by default, a commercial solver like **Gurobi** or **CPLEX** is strongly recommended for production use to ensure convergence and performance.
-
-### Simulation
-```bash
-python src/water_distribution_simulation/workflow.py
-```
 
 ## Installation
 ```bash
