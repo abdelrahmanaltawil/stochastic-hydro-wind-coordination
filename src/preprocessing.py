@@ -5,39 +5,20 @@ unified config and returns a data dict consumed by algorithm_tasks.build_model()
 """
 
 import logging
+import uuid
 from datetime import datetime
 from pathlib import Path
 
 import opendssdirect as dss
 
-from src.helpers.utils import load_config
-
-logger = logging.getLogger("econex.preprocessing")
 
 
-def create_run_directory(output_dir: str) -> Path:
-    """Create a timestamped run directory under output_dir.
 
-    Args:
-        output_dir: Base results directory (from config['paths']['output_dir']).
-
-    Returns:
-        Path to the created run_YYYYMMDD_HHMMSS/ directory.
-    """
-    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-    run_dir = Path(output_dir) / f"run_{run_id}"
-    run_dir.mkdir(parents=True, exist_ok=True)
-    (run_dir / "metadata").mkdir(exist_ok=True)
-    logger.info(f"Created run directory: {run_dir}")
-    return run_dir
-
-
-def build_network_data(config: dict, project_root: Path) -> dict:
+def load_networks(config: dict) -> dict:
     """Load and validate network files referenced in config.
 
     Args:
         config:       Unified configuration dict (from config.yaml).
-        project_root: Absolute path to the project root directory.
 
     Returns:
         Dict with keys 'water' and/or 'energy', each containing the
@@ -45,24 +26,21 @@ def build_network_data(config: dict, project_root: Path) -> dict:
     """
     data = {}
 
-    if config.get("run_water") or config.get("run_nexus"):
-        water_cfg = config.get("water", {})
-        inp_path = project_root / water_cfg["network"]
+    # Load water network
+    if config["run_water"] or config["run_nexus"]:
+        inp_path = Path(config["water"]["network"])
         if not inp_path.exists():
             raise FileNotFoundError(f"Water network not found: {inp_path}")
-        data["water"] = {
-            "inp_file": str(inp_path),
-            "config": config,
-        }
-        logger.info(f"Water network: {inp_path}")
+        data["water"] = {"inp_file": str(inp_path)}
+        logging.info(f"Loaded water network: {inp_path}")
 
-    if config.get("run_energy") or config.get("run_nexus"):
-        energy_cfg = config.get("energy", {})
-        dss_path = project_root / energy_cfg["network"]
+    # Load energy network
+    if config["run_energy"] or config["run_nexus"]:
+        dss_path = Path(config["energy"]["network"])
         if not dss_path.exists():
             raise FileNotFoundError(f"Energy network not found: {dss_path}")
-        data["energy"] = _build_energy_data(energy_cfg, dss_path, config.get("T", 24))
-        logger.info(f"Energy network: {dss_path}")
+        data["energy"] = _build_energy_data(config["energy"], dss_path, config["T"])
+        logging.info(f"Loaded energy network: {dss_path}")
 
     return data
 

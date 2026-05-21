@@ -9,34 +9,101 @@ import platform
 import getpass
 import socket
 import subprocess
+import uuid
 from datetime import datetime
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-def load_config(config_path: str) -> dict:
-    """Load configuration from a YAML file.
+def create_save_dir(base_path: str, config: dict) -> Path:
+    """Creates the results directory structure with timestamp and unique ID."""
 
-    Args:
-        config_path: Path to the configuration file.
+    # generate timestamp and run id
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_id = uuid.uuid4().hex[:4]
 
-    Returns:
-        Configuration dictionary.
+    # get active components
+    active = [
+        name 
+        for name, flag in [
+            ("WATER", config["run_water"]),
+            ("ENERGY", config["run_energy"]),
+            ("NEXUS", config["run_nexus"])
+        ] 
+        if flag
+    ]
+    base_name = "-".join(active)
 
-    Raises:
-        FileNotFoundError: If the configuration file does not exist.
-    """
-    logger.info(f"Loading configuration from: {config_path}")
-    try:
-        with open(config_path, 'r') as f:
-            config = yaml.safe_load(f)
-    except FileNotFoundError:
-        logger.error(f"Configuration file not found: {config_path}")
-        logger.info("Please ensure the configuration file exists.")
-        raise
+    # create save directory
+    save_dir = Path(base_path) / f"{base_name} -- {timestamp} -- {run_id}"
+
+    save_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create metadata subdirectory
+    (save_dir / "metadata" / "inputs").mkdir(parents=True, exist_ok=True)
     
-    logger.debug(f"Configuration loaded with {len(config)} top-level keys")
-    return config
+    return save_dir
+
+def setup_run_logging(save_path: Path) -> None:
+    """Configures both console and file handlers for the run."""
+
+    class _FormatSolverLogs(logging.Filter):
+        def filter(self, record):
+            # A generalized check for Pyomo solver logs (e.g. GUROBI_RUN, GLPK_RUN, or pyomo.solver)
+            # without hardcoding any specific solver names.
+            is_solver_log = (
+                record.name.endswith("_RUN") or 
+                record.module.endswith("_RUN") or 
+                "solver" in record.name.lower() or 
+                "solver" in record.module.lower()
+            )
+        
+            if is_solver_log:
+                # Prefix the module name so it displays exactly as the user requested
+                if not record.module.startswith("algorithm_tasks - "):
+                    record.module = f"algorithm_tasks - {record.module}"
+            return True
+
+    # console handler
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_formatter = logging.Formatter("%(asctime)s [%(levelname)s] \033[1m%(module)s\033[0m - %(message)s")
+    console_handler.setFormatter(console_formatter)
+    console_handler.addFilter(_FormatSolverLogs())
+
+    # file handler
+    log_path = save_path
+    file_handler = logging.FileHandler(log_path)
+    file_formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(module)s - %(message)s")
+    file_handler.setFormatter(file_formatter)
+    file_handler.addFilter(_FormatSolverLogs())
+
+    # Configure root logger
+    logging.basicConfig(
+        level=logging.INFO,
+        handlers=[console_handler, file_handler],
+        force=True
+    )
+
+
+def collect_run_metadata(save_path: Path) -> dict:
+    """Collects run environment and versioning details."""
+
+    metadata = {
+        "experiment_id": save_path.parts[-1].split(" -- ")[-1],
+        "execution_start_time": datetime.now().isoformat(),
+        "python_version": sys.version,
+        "platform": platform.platform(),
+        "user": getpass.getuser(),
+        "hostname": socket.gethostname(),
+        "working_directory": os.getcwd(),
+        "command": " ".join(sys.argv),
+    }
+
+    logging.info("Collecting run environment and versioning details...")
+    logging.info(f"Experiment ID: {metadata['experiment_id']} (started at {metadata['execution_start_time']})")
+    logging.info(f"Experiment results will be saved to: {save_path}\n\n")
+
+    return metadata
 
 
 def get_git_revision_hash() -> str:
@@ -50,57 +117,3 @@ def get_git_revision_hash() -> str:
     except Exception as e:
         logger.warning(f"Could not retrieve git hash: {e}")
         return "unknown"
-
-
-def save_run_metadata(run_dir: Path) -> None:
-    """Log and save system-level run metadata.
-
-    Args:
-        run_dir: Run directory path.
-    """
-    logger.debug("Logging run metadata")
-    
-    metadata = {
-        "experiment_id": run_dir.name,
-        "execution_start_time": datetime.fromtimestamp(run_dir.stat().st_ctime).isoformat(),
-        "execution_duration_min": round((datetime.now() - datetime.fromtimestamp(run_dir.stat().st_ctime)).total_seconds() / 60, 3),
-        "timestamp": datetime.now().isoformat(),
-        "git_commit": get_git_revision_hash(),
-        "python_version": sys.version,
-        "platform": platform.platform(),
-        "user": getpass.getuser(),
-        "hostname": socket.gethostname(),
-        "working_directory": os.getcwd(),
-        "command": " ".join(sys.argv),
-    }
-
-    output_path = run_dir / 'metadata' / 'run_metadata.json'
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    
-    with open(output_path, 'w') as f:
-        json.dump(metadata, f, indent=2)
-    
-    
-    logger.info(f"Metadata saved to {output_path}")
-
-
-def save_config(run_dir: Path, config_path: str) -> None:
-    """Save the original configuration file to the run directory.
-    
-    This function ensures reproducibility by saving the exact configuration file 
-    used to run the simulation, without any runtime mutations.
-
-    Args:
-        run_dir: Run directory path.
-        config_path: Path to the original configuration file to copy.
-    """
-    if config_path:
-        try:
-            target_path = run_dir / 'config.yaml'
-            shutil.copy(config_path, target_path)
-            logger.debug(f"Copied original config to {target_path}")
-        except Exception as e:
-            logger.warning(f"Could not copy original config file: {e}")
-
-
-

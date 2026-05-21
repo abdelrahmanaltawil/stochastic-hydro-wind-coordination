@@ -12,15 +12,15 @@ T: 24           # Number of hourly time steps
 
 # ── Output ─────────────────────────────────────────────────────────────────────
 paths:
-  output_dir: data/results
+  output_dir: ./data/results
 
 # ── Water network ──────────────────────────────────────────────────────────────
 water:
-  network: data/inputs/system_config/water/GNET.inp
+  network: ./data/inputs/system_config/water/ANET.inp
 
 # ── Energy network ─────────────────────────────────────────────────────────────
 energy:
-  network:           data/inputs/config/system_config/energy/master.dss
+  network:           ./data/inputs/system_config/energy/master.dss
   nominal_voltage:   11.0    # kV (line-to-line)
   base_power:        1000.0  # kVA
   voltage_tolerance: 0.10    # ±10 % per-unit (E9)

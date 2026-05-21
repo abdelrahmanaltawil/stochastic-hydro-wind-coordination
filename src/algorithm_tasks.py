@@ -16,7 +16,7 @@ import pyomo.environ as pyo
 import wntr
 from pyomo.opt import SolverFactory
 
-from src.helpers.water.hydraulic_utils import (
+from helpers.water.hydraulic_utils import (
     calc_K,
     create_piecewise_pipe_curve,
     create_piecewise_pump_curve,
@@ -24,13 +24,12 @@ from src.helpers.water.hydraulic_utils import (
     get_pump_curve_points,
 )
 from scipy.optimize import curve_fit
-from src.helpers.energy.power_utils import (
+from helpers.energy.power_utils import (
     calc_line_admittance,
     linearized_ac_coefficients,
     create_pwl_current_segments,
 )
 
-logger = logging.getLogger("econex.algorithm_tasks")
 
 _MAX_FLOW = 5.0    # m³/s — loose upper bound for water big-M and variable bounds
 _MAX_HEAD = 500.0  # metres
@@ -132,14 +131,13 @@ def build_model(data: dict, config: dict) -> pyo.ConcreteModel:
 
     _build_objective(model)
 
-    logger.info("Model assembled successfully")
+    logging.info("Model assembled successfully")
     return model
 
 
 def solve_model(
     model: pyo.ConcreteModel,
     solver: str = "glpk",
-    tee: bool = True,
     timeout: int = 300,
     logfile: str = None,
 ) -> tuple:
@@ -148,7 +146,6 @@ def solve_model(
     Args:
         model:   ConcreteModel from build_model().
         solver:  Solver name ('glpk', 'gurobi', 'cbc', etc.).
-        tee:     Stream solver output to stdout.
         timeout: Time limit in seconds.
         logfile: Path to save solver log.
 
@@ -158,27 +155,42 @@ def solve_model(
     Raises:
         RuntimeError: If the solver is not available.
     """
-    logger.info(f"Solving with {solver} (timeout={timeout}s)")
-    opt = SolverFactory(solver)
+    opt = SolverFactory(solver, tee=False)
     if not opt.available():
         raise RuntimeError(
             f"Solver '{solver}' not available. "
-            "Install GLPK: brew install glpk  |  pip install glpk"
         )
 
     if solver == "glpk":
         opt.options["tmlim"] = timeout
+        opt.options["log"] = logfile
+
     elif solver in ("gurobi", "cplex"):
         opt.options["TimeLimit"] = timeout
+        opt.options["LogToConsole"] = 1
+        opt.options["LogFile"] = logfile
+
     elif solver == "cbc":
         opt.options["seconds"] = timeout
+        opt.options["log"] = logfile
 
-    results = opt.solve(model, tee=tee, logfile=logfile)
-    logger.info(
+
+    logging.info(f"Solving with {solver} (timeout={timeout}s)")
+    try:
+        results = opt.solve(model, tee=False)
+    except RuntimeError as e:
+        logging.error(f"Solver failed: {e}")
+        raise
+    except Exception as e:
+        logging.error(f"Unexpected error during solving: {e}", exc_info=True)
+        raise
+    
+
+    logging.info(
         f"Solver finished: {results.solver.status} / "
         f"{results.solver.termination_condition}"
     )
-    return model, results
+    return model, results, logfile
 
 
 # ---------------------------------------------------------------------------
@@ -212,10 +224,10 @@ def _epanet_pipe_max_flows(wn: "wntr.network.WaterNetworkModel", T: int) -> dict
                 result[pipe] = max(peak * 2.0, 0.01)
             else:
                 result[pipe] = _MAX_FLOW
-        logger.info(f"EPANET pre-simulation: per-pipe max flows computed for {len(result)} pipes")
+        logging.info(f"EPANET pre-simulation: per-pipe max flows computed for {len(result)} pipes")
         return result
     except Exception as exc:
-        logger.warning(f"EPANET pre-simulation failed ({exc}); using global max_flow fallback")
+        logging.warning(f"EPANET pre-simulation failed ({exc}); using global max_flow fallback")
         return {}
 
 
@@ -230,7 +242,7 @@ def _add_water_submodel(model: pyo.ConcreteModel, data: dict) -> None:
         data:  {'inp_file': str, 'config': dict}
     """
     inp_file = data["inp_file"]
-    logger.info(f"Building water sub-model from {inp_file}")
+    logging.info(f"Building water sub-model from {inp_file}")
     wn = wntr.network.WaterNetworkModel(inp_file)
 
     # Sets
@@ -317,7 +329,7 @@ def _add_water_submodel(model: pyo.ConcreteModel, data: dict) -> None:
 
     model.Q       = pyo.Var(model.Links, model.T, bounds=q_bounds, domain=pyo.Reals)
     model.H       = pyo.Var(model.Nodes, model.T, bounds=(0, _MAX_HEAD), domain=pyo.NonNegativeReals)
-    model.Status  = pyo.Var(model.Pumps | model.Valves, model.T, domain=pyo.Binary)
+    model.Status  = pyo.Var(model.Pumps, model.T, domain=pyo.Binary)
     model.SlackPos = pyo.Var(model.Junctions, model.T, domain=pyo.NonNegativeReals)
     model.SlackNeg = pyo.Var(model.Junctions, model.T, domain=pyo.NonNegativeReals)
 
@@ -451,9 +463,6 @@ def _add_water_submodel(model: pyo.ConcreteModel, data: dict) -> None:
             for t in model.T:
                 add_pwl_constraint(model, f"pwl_pump_{p}_{t}", model.Q[p, t], model.PumpHeadGain[p, t], pts)
 
-    # Note: model.Status is now restricted to Pumps. Valves use V1/V2/V3.
-    model.Status  = pyo.Var(model.Pumps, model.T, domain=pyo.Binary)
-
     model.PumpStatusFlow = pyo.Constraint(
         model.Pumps, model.T,
         rule=lambda m, p, t: m.Q[p, t] <= _MAX_FLOW * m.Status[p, t]
@@ -537,7 +546,7 @@ def _add_water_submodel(model: pyo.ConcreteModel, data: dict) -> None:
         + sum(1e9 * (m.SlackPos[n, t] + m.SlackNeg[n, t]) for n in m.Junctions for t in m.T)
     ))
 
-    logger.info(f"Water sub-model: {len(nodes)} nodes, {len(links)} links, {len(pumps)} pumps")
+    logging.info(f"Water sub-model: {len(nodes)} nodes, {len(links)} links, {len(pumps)} pumps")
 
 
 # ---------------------------------------------------------------------------
@@ -554,7 +563,7 @@ def _add_energy_submodel(model: pyo.ConcreteModel, data: dict) -> None:
         model: Shared ConcreteModel with model.T already set.
         data:  Dict from preprocessing.build_network_data()['energy'].
     """
-    logger.info("Building energy sub-model (E1–E13)")
+    logging.info("Building energy sub-model (E1–E13)")
 
     buses      = data["buses"]
     lines      = data["lines"]        # list of (n, m, R, X, I_max)
@@ -732,7 +741,7 @@ def _add_energy_submodel(model: pyo.ConcreteModel, data: dict) -> None:
         rule=lambda m: sum(tariff[t] * m.P_import[b, t] for b in m.Buses for t in m.T)
     )
 
-    logger.info(f"Energy sub-model: {len(buses)} buses, {len(lines)} lines")
+    logging.info(f"Energy sub-model: {len(buses)} buses, {len(lines)} lines")
 
 
 # ---------------------------------------------------------------------------
@@ -746,7 +755,7 @@ def _add_nexus_constraints(model: pyo.ConcreteModel, data: dict) -> None:
     electrical load, which enters the energy electricity balance (E1).
     See doc/capsules/models/nexus_coupling.md.
     """
-    logger.warning("Nexus coupling is not yet implemented — placeholder only.")
+    logging.warning("Nexus coupling is not yet implemented — placeholder only.")
     raise NotImplementedError(
         "Nexus coupling is planned for a future milestone. "
         "Set run_nexus: false in config.yaml to run water and energy independently."
@@ -766,7 +775,7 @@ def _build_objective(model: pyo.ConcreteModel) -> None:
         cost_terms.append(model.energy_cost)
 
     if not cost_terms:
-        logger.warning("No cost expressions found — using zero objective.")
+        logging.warning("No cost expressions found — using zero objective.")
         model.objective = pyo.Objective(expr=0, sense=pyo.minimize)
         return
 

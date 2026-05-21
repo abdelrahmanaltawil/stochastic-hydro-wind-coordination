@@ -13,7 +13,6 @@ from pathlib import Path
 import opendssdirect as dss
 import pandas as pd
 
-logger = logging.getLogger("econex.helpers.energy_simulation")
 
 
 def load_energy_network(dss_file: str) -> None:

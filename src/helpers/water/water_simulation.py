@@ -12,8 +12,6 @@ from pathlib import Path
 
 import wntr
 
-logger = logging.getLogger("econex.helpers.water_simulation")
-
 
 # ---------------------------------------------------------------------------
 # Network loading

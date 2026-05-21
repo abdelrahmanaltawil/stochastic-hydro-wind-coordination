@@ -4,23 +4,25 @@ Handles both water and energy results, writing to run_dir/water/ and
 run_dir/energy/ subdirectories respectively.
 """
 
-import json
+# imports
+import datetime
+import yaml
 import logging
-import shutil
+import subprocess
+import sys
+import os
+import platform
+import socket
+import getpass
 from pathlib import Path
-
+import json
+import shutil
 import pandas as pd
 import pyomo.environ as pyo
 
+from helpers import utils
 
 
-
-logger = logging.getLogger("econex.postprocessing")
-
-
-# ---------------------------------------------------------------------------
-# Solution extraction
-# ---------------------------------------------------------------------------
 
 def extract_solution(model: pyo.ConcreteModel) -> dict:
     """Extract all solved variable values from the model.
@@ -31,7 +33,7 @@ def extract_solution(model: pyo.ConcreteModel) -> dict:
     try:
         obj_val = pyo.value(model.objective)
     except (ValueError, TypeError):
-        logger.warning("Model objective has no value — returning empty results.")
+        logging.warning("Model objective has no value — returning empty results.")
         return {"objective": None, "water": {}, "energy": {}}
 
     results = {"objective": obj_val, "water": {}, "energy": {}}
@@ -42,7 +44,8 @@ def extract_solution(model: pyo.ConcreteModel) -> dict:
     if hasattr(model, "P_import"):
         results["energy"] = _extract_energy(model)
 
-    logger.info(f"Solution extracted. Objective: {obj_val:.4f}")
+    logging.info("Extracting solution...")
+
     return results
 
 
@@ -112,10 +115,6 @@ def _extract_energy(model: pyo.ConcreteModel) -> dict:
             "line_flows": line_flows, "voltages": voltages}
 
 
-# ---------------------------------------------------------------------------
-# Summary
-# ---------------------------------------------------------------------------
-
 def create_summary(run_id: str, model: pyo.ConcreteModel,
                    results: dict, solver_results) -> dict:
     """Compute summary metrics.
@@ -123,12 +122,15 @@ def create_summary(run_id: str, model: pyo.ConcreteModel,
     Args:
         run_id:         Run directory name.
         model:          Solved ConcreteModel.
-        results:        From extract_solution().
+        results:        From extract_solution() -> water and energy.
         solver_results: Pyomo solver result object.
 
     Returns:
         Summary dict saved to summary.json.
     """
+
+    logging.info("Writing solution summary...")
+
     n_vars = sum(1 for _ in model.component_data_objects(pyo.Var, active=True))
     n_cons = sum(1 for _ in model.component_data_objects(pyo.Constraint, active=True))
 
@@ -153,63 +155,95 @@ def create_summary(run_id: str, model: pyo.ConcreteModel,
 # Saving
 # ---------------------------------------------------------------------------
 
-def save_results(results: dict, summary: dict, run_dir: Path) -> None:
-    """Write all results to disk.
+def save_run_metadata(
+    save_path: Path,
+    metadata: dict,
+    experiment_parameters: dict,
+    network_files: dict[str, str],
+    logger: logging.Logger,
+    solver_log_path: str = None
+    ) -> None:
+    """Saves run environment and versioning, details."""
+    try:
+        start_time = datetime.datetime.fromisoformat(metadata["execution_start_time"])
+        end_time = datetime.datetime.now()
+        duration_min = (end_time - start_time).total_seconds() / 60.0
 
-    Water results → run_dir/water/
-    Energy results → run_dir/energy/
-    Summary        → run_dir/summary.json
+        metadata = {
+            "experiment_id": save_path.parts[-1].split(" -- ")[-1],
+            "execution_start_time": metadata["execution_start_time"],
+            "execution_end_time": end_time.isoformat(),
+            "execution_duration_min": round(duration_min, 2),
+            "timestamp": end_time.isoformat(),
+            "git_commit": utils.get_git_revision_hash(),
+            "python_version": sys.version,
+            "platform": platform.platform(),
+            "user": getpass.getuser(),
+            "hostname": socket.gethostname(),
+            "working_directory": os.getcwd(),
+            "command": " ".join(sys.argv),
+            "solver_log": str(solver_log_path) if solver_log_path else None,
+        }
 
-    Args:
-        results:  From extract_solution().
-        summary:  From create_summary().
-        run_dir:  Top-level run directory.
-    """
-    logger.info(f"Saving results to {run_dir}")
+        # Save run metadata        
+        meta_path = save_path / "00_run_metadata.yaml"
+        with open(meta_path, "w") as f:
+            yaml.dump(metadata, f)
+        logging.info(f"Saved {meta_path.name} to {save_path.relative_to(save_path.parent)}")
 
-    water = results.get("water", {})
-    if water:
-        w_dir = run_dir / "water"
-        w_dir.mkdir(exist_ok=True)
-        if water.get("flows"):
-            pd.DataFrame(water["flows"]).to_csv(w_dir / "flows.csv", index=False)
-        if water.get("heads"):
-            pd.DataFrame(water["heads"]).to_csv(w_dir / "heads.csv", index=False)
-        if water.get("pump_status"):
-            pd.DataFrame(water["pump_status"]).to_csv(w_dir / "pump_status.csv", index=False)
-        if water.get("slack"):
-            pd.DataFrame(water["slack"]).to_csv(w_dir / "slack.csv", index=False)
+        # Save experiment parameters
+        param_path = save_path / "inputs" / "00_experiment_parameters.yaml"
+        with open(param_path, "w") as f:
+            yaml.dump(experiment_parameters, f)
+        logging.info(f"Saved {param_path.name} to {save_path.relative_to(save_path.parent)}")
 
-    energy = results.get("energy", {})
-    if energy:
-        e_dir = run_dir / "energy"
-        e_dir.mkdir(exist_ok=True)
-        if energy.get("dispatch"):
-            pd.DataFrame(energy["dispatch"]).to_csv(e_dir / "dispatch.csv", index=False)
-        if energy.get("soc"):
-            pd.DataFrame(energy["soc"]).to_csv(e_dir / "soc.csv", index=False)
-        if energy.get("line_flows"):
-            pd.DataFrame(energy["line_flows"]).to_csv(e_dir / "line_flows.csv", index=False)
-        if energy.get("voltages"):
-            pd.DataFrame(energy["voltages"]).to_csv(e_dir / "voltages.csv", index=False)
+        # Save network files
+        for network_name, network_data in network_files.items():
+            network_file = network_data["inp_file"] if isinstance(network_data, dict) else network_data
+            if not network_file:
+                continue
+            network_path = save_path / "inputs" / network_name / Path(network_file).name
+            network_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(network_file, network_path)
+            logging.info(f"Saved {network_name} network file - {Path(network_file).name} - to "
+                         f"{network_path.relative_to(save_path.parent)}")
 
-    summary["run_id"] = run_dir.name
-    with open(run_dir / "summary.json", "w") as f:
-        json.dump(summary, f, indent=2)
+        # Save run and solver logs
+        logging.info(f"Saved {Path(logger.handlers[-1].baseFilename).name} and {Path(solver_log_path).name} to "
+                     f"{save_path.relative_to(save_path.parent)}")
 
-    logger.info("All results saved")
+        return metadata
+
+    except Exception as e:
+        logging.error(f"Failed to save run metadata, parameters & logs: {e}", exc_info=True)
 
 
-def save_network_files(run_dir: Path, config: dict, project_root: Path) -> None:
-    """Copy input network files to run directory for reproducibility."""
-    water_cfg = config.get("water", {})
-    if water_cfg.get("network"):
-        src = project_root / water_cfg["network"]
-        if src.exists():
-            shutil.copy2(src, run_dir / src.name)
 
-    energy_cfg = config.get("energy", {})
-    if energy_cfg.get("network"):
-        src = project_root / energy_cfg["network"]
-        if src.exists():
-            shutil.copy2(src, run_dir / src.name)
+def save_data(datasets: dict, save_path: Path) -> None:
+    """Save datasets to CSV (.csv) or JSON (.json) under save_path."""
+    
+    for filename, data in datasets.items():
+        if data is None:
+            continue
+
+        # Create full path
+        full_path = save_path / filename
+        full_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Save data
+        if filename.endswith(".json") or filename.endswith(".yaml"):
+            with open(full_path, "w") as f:
+                json.dump(data, f, indent=2)
+
+
+        elif filename.endswith(".csv"):
+            data_df = data if isinstance(data, pd.DataFrame) else pd.DataFrame(data)
+            data_df.to_csv(full_path, index=False)
+
+
+        else:
+            logging.warning(f"Unsupported file type: {filename.split('/')[-1]}")
+            continue
+
+        logging.info(f"Saved {full_path.name} to {full_path.parent.relative_to(save_path)}")
+
