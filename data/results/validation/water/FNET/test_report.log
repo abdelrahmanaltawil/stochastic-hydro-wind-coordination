@@ -1,0 +1,9 @@
+2026-05-17 18:00:11 | INFO     | Test Report — FNET
+2026-05-17 18:00:11 | INFO     | ============================================================
+2026-05-17 18:00:11 | INFO     | Scenario: FNET.INP | T=24 | solver=gurobi
+2026-05-17 18:00:12 | INFO     | Solver termination: optimal
+2026-05-17 18:00:13 | INFO     | Plotting 1 items for pump_flows...
+2026-05-17 18:00:13 | INFO     | Plotting 262 items for junction_heads...
+2026-05-17 18:00:32 | INFO     | Plotting 288 items for pipe_flows...
+2026-05-17 18:00:53 | INFO     | ============================================================
+2026-05-17 18:00:53 | INFO     | End of Report

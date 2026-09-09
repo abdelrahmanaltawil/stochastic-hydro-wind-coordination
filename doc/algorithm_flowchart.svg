@@ -1,0 +1,88 @@
+<svg width="1180" height="770" viewBox="0 0 1180 770" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="1180" height="770" fill="#FFFFFF"/>
+  <defs>
+    <marker id="ar" markerWidth="10" markerHeight="10" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#2B3A48"/></marker>
+    <marker id="arg" markerWidth="10" markerHeight="10" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#0B6E4F"/></marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="590" y="40" text-anchor="middle" font-family="Georgia, serif" font-size="27" font-weight="bold" fill="#0E2233">Solving Algorithm — Optimization Framework Blueprint</text>
+  <text x="590" y="66" text-anchor="middle" font-size="15" fill="#5B6B7A">One EPANET pre-simulation feeds both the hydraulic PWL bounds and the nexus pump load</text>
+
+  <!-- spine vertical arrows -->
+  <g stroke="#2B3A48" stroke-width="2.4">
+    <line x1="590" y1="120" x2="590" y2="140" marker-end="url(#ar)"/>
+    <line x1="590" y1="190" x2="590" y2="210" marker-end="url(#ar)"/>
+    <line x1="590" y1="286" x2="590" y2="312" marker-end="url(#arg)" stroke="#0B6E4F"/>
+    <line x1="590" y1="556" x2="590" y2="582" marker-end="url(#ar)"/>
+    <line x1="590" y1="640" x2="590" y2="666" marker-end="url(#ar)"/>
+  </g>
+
+  <!-- 1. Config (start pill) -->
+  <rect x="390" y="86" width="400" height="48" rx="24" fill="#0E2233"/>
+  <text x="590" y="110" text-anchor="middle" font-size="15" font-weight="bold" fill="#FFFFFF">Read config.yaml</text>
+  <text x="590" y="126" text-anchor="middle" font-size="11.5" fill="#AFC0CF">flags: run_water · run_energy · run_nexus · horizon T · paths</text>
+
+  <!-- 2. Load networks -->
+  <rect x="370" y="142" width="440" height="48" rx="8" fill="#FFFFFF" stroke="#2B3A48" stroke-width="1.8"/>
+  <text x="590" y="164" text-anchor="middle" font-size="15" font-weight="bold" fill="#0E2233">Preprocessing — load networks</text>
+  <text x="590" y="182" text-anchor="middle" font-size="11.5" fill="#5B6B7A">water .inp (WNTR)  ·  energy .dss (OpenDSS → buses)  ·  resolve abs. paths</text>
+
+  <!-- 3. EPANET pre-sim (highlighted) -->
+  <rect x="360" y="212" width="460" height="74" rx="10" fill="#E3F1EA" stroke="#0B6E4F" stroke-width="2.4"/>
+  <text x="384" y="238" font-size="16" font-weight="bold" fill="#0B6E4F">★  EPANET pre-simulation — run ONCE</text>
+  <text x="384" y="260" font-size="12.5" fill="#1F4D3D">cache = link flowrate + headloss  (cwd-guarded, falls back if it fails)</text>
+  <text x="384" y="278" font-size="12.5" fill="#1F4D3D">→ derived operating points reused by the model builders below</text>
+
+  <!-- feed arrows from pre-sim into build rows (left routing) -->
+  <g stroke="#0B6E4F" stroke-width="2" stroke-dasharray="5 4" fill="none">
+    <path d="M360 250 H300 V406 H368" marker-end="url(#arg)"/>
+    <path d="M360 268 H276 V486 H368" marker-end="url(#arg)"/>
+  </g>
+  <text x="150" y="386" font-size="12.5" font-weight="bold" fill="#0B6E4F">pipe flow ceilings</text>
+  <text x="150" y="402" font-size="11.5" fill="#3C5C4F">(PWL head-loss domain)</text>
+  <text x="150" y="470" font-size="12.5" font-weight="bold" fill="#0B6E4F">mean pump power  P̄ₚ</text>
+  <text x="150" y="486" font-size="11.5" fill="#3C5C4F">(ρg·⟨Q·ΔH⟩, when ON)</text>
+
+  <!-- 4. Build MILP (container) -->
+  <rect x="368" y="312" width="444" height="242" rx="10" fill="#F7FAFD" stroke="#2B3A48" stroke-width="1.8"/>
+  <text x="590" y="336" text-anchor="middle" font-size="15.5" font-weight="bold" fill="#0E2233">Build MILP  (Pyomo ConcreteModel)</text>
+
+  <!-- water row -->
+  <rect x="386" y="350" width="408" height="40" rx="7" fill="#EAF2FC" stroke="#1C6DD0" stroke-width="1.3"/>
+  <text x="400" y="368" font-size="13" font-weight="bold" fill="#0B4F8A">Water sub-model  (W1–W16)</text>
+  <text x="400" y="384" font-size="11.5" fill="#2A4A66">PWL Hazen–Williams + pump curve · tanks · valves</text>
+
+  <!-- energy row -->
+  <rect x="386" y="396" width="408" height="40" rx="7" fill="#FBF1DC" stroke="#C8901B" stroke-width="1.3"/>
+  <text x="400" y="414" font-size="13" font-weight="bold" fill="#8A6200">Energy sub-model  (E1–E13)</text>
+  <text x="400" y="430" font-size="11.5" fill="#5E4A1E">hub balance + linearized AC power flow · grid limits</text>
+
+  <!-- nexus row -->
+  <rect x="386" y="442" width="408" height="40" rx="7" fill="#E3F1EA" stroke="#0B6E4F" stroke-width="1.3"/>
+  <text x="400" y="460" font-size="13" font-weight="bold" fill="#0B6E4F">Nexus coupling  (N1–N3)</text>
+  <text x="400" y="476" font-size="11.5" fill="#27483B">inject  P̄ₚ·yₚᵗ  into E1/E7  ·  drop water cost proxy</text>
+
+  <!-- objective row -->
+  <rect x="386" y="488" width="408" height="40" rx="7" fill="#EEF1F4" stroke="#5B6B7A" stroke-width="1.3"/>
+  <text x="400" y="506" font-size="13" font-weight="bold" fill="#2B3A48">Assemble objective</text>
+  <text x="400" y="522" font-size="11.5" fill="#42566B">min  net grid cost (import − export) + switching penalty</text>
+
+  <text x="590" y="546" text-anchor="middle" font-size="10.8" font-style="italic" fill="#7B8794">config flags select which blocks are assembled</text>
+
+  <!-- 5. Solve -->
+  <rect x="390" y="584" width="400" height="56" rx="8" fill="#FFFFFF" stroke="#2B3A48" stroke-width="1.8"/>
+  <text x="590" y="608" text-anchor="middle" font-size="15" font-weight="bold" fill="#0E2233">Solve MILP</text>
+  <text x="590" y="626" text-anchor="middle" font-size="11.5" fill="#5B6B7A">Gurobi / HiGHS / CBC  ·  time limit + solver log</text>
+
+  <!-- 6. Postprocess (end) -->
+  <rect x="370" y="668" width="440" height="58" rx="8" fill="#0E2233"/>
+  <text x="590" y="692" text-anchor="middle" font-size="15" font-weight="bold" fill="#FFFFFF">Postprocess — extract &amp; save</text>
+  <text x="590" y="710" text-anchor="middle" font-size="11.5" fill="#AFC0CF">pump schedule · flows · heads · dispatch · SoC · summary · metadata</text>
+
+  <!-- optional validation side note -->
+  <line x1="810" y1="697" x2="900" y2="697" stroke="#2B3A48" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+  <rect x="900" y="672" width="232" height="50" rx="8" fill="#FFFFFF" stroke="#9AA7B3" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="1016" y="692" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#42566B">optional: validate</text>
+  <text x="1016" y="709" text-anchor="middle" font-size="11" fill="#5B6B7A">re-simulate schedule in WNTR</text>
+</svg>

@@ -1,0 +1,7 @@
+2026-05-17 12:26:46 | INFO     | Test Report — master
+2026-05-17 12:26:46 | INFO     | ============================================================
+2026-05-17 12:26:46 | INFO     | Energy Scenario: master.dss | T=24 | solver=gurobi
+2026-05-17 12:26:46 | INFO     | Solver termination: optimal
+2026-05-17 12:26:46 | INFO     | Plotting 2 items for P_kw...
+2026-05-17 12:26:46 | INFO     | ============================================================
+2026-05-17 12:26:46 | INFO     | End of Report

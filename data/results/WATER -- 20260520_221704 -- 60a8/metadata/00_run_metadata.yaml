@@ -1,0 +1,16 @@
+command: src/workflow.py
+execution_duration_min: 0.24
+execution_end_time: '2026-05-20T22:17:18.429607'
+execution_start_time: '2026-05-20T22:17:04.037463'
+experiment_id: metadata
+git_commit: 1ad42a7665984ba299d6db2e31aff0a08ad6d56d
+hostname: Abdelrahmans-MacBook-Pro.local
+platform: macOS-26.1-arm64-arm-64bit
+python_version: 3.12.10 | packaged by conda-forge | (main, Apr 10 2025, 22:19:24)
+  [Clang 18.1.8 ]
+solver_log: data/results/WATER -- 20260520_221704 -- 60a8/metadata/00_solver.log
+timestamp: '2026-05-20T22:17:18.429607'
+user: abdelrahmanaltawil
+working_directory: /Users/abdelrahmanaltawil/Developer/GitHub/publications-implementation/A
+  stochastic model for the daily coordination of pumped storage hydro plants and wind
+  power plants

@@ -1,0 +1,132 @@
+; Filename: /Users/abdelrahmanaltawil/Developer/GitHub/publications-implementation/A stochastic model for the daily coordination of pumped storage hydro plants and wind power plants/data/inputs/system_config/water/SNET.inp
+; WNTR: 1.4.0
+; Created: 2026-06-05 12:21:53
+[TITLE]
+SNET - Simple network to illustrate the water-energy (pump) nexus
+One reservoir, one pump, one demand junction, one storage tank.
+Pump duty-cycles on tank level + diurnal demand -> a clean, nonzero
+mean pump load (~19.5 kW) for the nexus electrical coupling.
+
+[JUNCTIONS]
+;ID                      Elevation       Demand Pattern                 
+ N1                                 0               0                            ;
+ N2                                 0              25 DEM                        ;
+
+[RESERVOIRS]
+;ID                                   Head                  Pattern
+ R1                                 0                            ;
+
+[TANKS]
+;ID                              Elevation           Init Level            Min Level            Max Level             Diameter           Min Volume Volume Curve         Overflow            
+ T1                                25               3               0               6              12               0                                             ;
+
+[PIPES]
+;ID                   Node1                Node2                              Length             Diameter            Roughness           Minor Loss               Status
+ P1                   N1                   N2                               500             300             130               0                 Open   ;
+ P2                   N2                   T1                               100             400             130               0                 Open   ;
+
+[PUMPS]
+;ID                   Node1                Node2                Properties          
+ PU1                  R1                   N1                   HEAD     C1                     ;
+
+[VALVES]
+;ID                   Node1                Node2                            Diameter Type              Setting           Minor Loss
+
+[TAGS]
+;type      name       tag       
+
+[DEMANDS]
+;ID        Demand     Pattern   
+
+[STATUS]
+;ID        Setting   
+
+[PATTERNS]
+;ID        Multipliers
+
+DEM 0.500000 0.400000 0.400000 0.500000 0.700000 1.000000
+DEM 1.400000 1.600000 1.500000 1.300000 1.200000 1.100000
+DEM 1.000000 1.000000 1.100000 1.200000 1.400000 1.600000
+DEM 1.500000 1.300000 1.000000 0.800000 0.600000 0.500000
+
+[CURVES]
+;ID         X-Value      Y-Value     
+;PUMP: C1
+ C1            50.000000    40.000000   ;
+
+
+[CONTROLS]
+Pump PU1 Open IF Tank T1 below 1.5
+Pump PU1 Closed IF Tank T1 above 5.5
+
+[RULES]
+
+[ENERGY]
+GLOBAL PRICE           0.0000
+
+[EMITTERS]
+;ID        Flow coefficient
+
+[QUALITY]
+
+[SOURCES]
+;Node      Type       Quality    Pattern   
+
+[REACTIONS]
+;Type           Pipe/Tank               Coefficient
+
+ ORDER BULK 1
+ ORDER TANK 1
+ ORDER WALL 1
+ GLOBAL BULK 0.0000    
+ GLOBAL WALL 0.0000    
+
+[MIXING]
+;Tank ID             Model Fraction
+
+[TIMES]
+DURATION             23:00:00
+HYDRAULIC TIMESTEP   01:00:00
+QUALITY TIMESTEP     00:06:00
+PATTERN TIMESTEP     01:00:00
+PATTERN START        00:00:00
+REPORT TIMESTEP      01:00:00
+REPORT START         00:00:00
+START CLOCKTIME      00:00:00 AM
+RULE TIMESTEP        00:06:00
+STATISTIC            NONE      
+
+[REPORT]
+
+[OPTIONS]
+UNITS                LPS                 
+HEADLOSS             H-W                 
+SPECIFIC GRAVITY     1
+VISCOSITY            1
+TRIALS               40
+ACCURACY             0.001
+CHECKFREQ            2
+MAXCHECK             10
+UNBALANCED           CONTINUE 10
+DEMAND MULTIPLIER    1
+EMITTER EXPONENT     0.5
+QUALITY              NONE                
+DIFFUSIVITY          1
+TOLERANCE            0.01
+
+[COORDINATES]
+;Node      X-Coord    Y-Coord   
+N1                 10.000000000         50.000000000
+N2                 30.000000000         50.000000000
+R1                  0.000000000         50.000000000
+T1                 30.000000000         80.000000000
+
+[VERTICES]
+;Link      X-Coord    Y-Coord   
+
+[LABELS]
+
+[BACKDROP]
+UNITS    NONE
+
+[END]

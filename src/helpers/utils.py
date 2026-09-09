@@ -1,8 +1,5 @@
 
 import logging
-import shutil
-import yaml
-import json
 import sys
 import os
 import platform
@@ -20,22 +17,22 @@ def create_save_dir(base_path: str, config: dict) -> Path:
 
     # generate timestamp and run id
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    run_id = uuid.uuid4().hex[:4]
+    run_id = uuid.uuid4().hex[:8]
 
     # get active components
     active = [
         name 
         for name, flag in [
-            ("WATER", config["run_water"]),
-            ("ENERGY", config["run_energy"]),
-            ("NEXUS", config["run_nexus"])
+            ("WATER", config.get("run_water", False)),
+            ("ENERGY", config.get("run_energy", False)),
+            ("NEXUS", config.get("run_nexus", False))
         ] 
         if flag
     ]
     base_name = "-".join(active)
 
     # create save directory
-    save_dir = Path(base_path) / f"{base_name} -- {timestamp} -- {run_id}"
+    save_dir = Path(base_path).expanduser().resolve() / f"{base_name} -- {timestamp} -- {run_id}"
 
     save_dir.mkdir(parents=True, exist_ok=True)
 
@@ -71,7 +68,8 @@ def setup_run_logging(save_path: Path) -> None:
     console_handler.addFilter(_FormatSolverLogs())
 
     # file handler
-    log_path = save_path
+    log_path = Path(save_path)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
     file_handler = logging.FileHandler(log_path)
     file_formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(module)s - %(message)s")
     file_handler.setFormatter(file_formatter)

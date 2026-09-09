@@ -1,0 +1,44 @@
+[
+  {
+    "case": "independent",
+    "electricity_cost": 2943.255004683324,
+    "grid_import_kwh": 16954.054514837517,
+    "peak_grid_import_kw": 920.0,
+    "pump_on_hours": 9,
+    "pump_energy_kwh": 233.52819904804232,
+    "terminal_tank_head_m": 28.04023581469774,
+    "terminal_battery_kwh": 100.0,
+    "solver_termination": "optimal",
+    "solve_time_s": 0.06815904192626476,
+    "variables": 3219,
+    "constraints": 2598
+  },
+  {
+    "case": "coordinated",
+    "electricity_cost": 2941.1791984695637,
+    "grid_import_kwh": 16954.054514837517,
+    "peak_grid_import_kw": 915.9475776720047,
+    "pump_on_hours": 9,
+    "pump_energy_kwh": 233.52819904804232,
+    "terminal_tank_head_m": 28.067929633065113,
+    "terminal_battery_kwh": 100.0,
+    "solver_termination": "optimal",
+    "solve_time_s": 4.248125332873315,
+    "variables": 3219,
+    "constraints": 2598
+  },
+  {
+    "case": "flat_price",
+    "electricity_cost": 1693.3528199048044,
+    "grid_import_kwh": 16933.528199048043,
+    "peak_grid_import_kw": 960.0,
+    "pump_on_hours": 9,
+    "pump_energy_kwh": 233.52819904804232,
+    "terminal_tank_head_m": 28.187436977706103,
+    "terminal_battery_kwh": 100.0,
+    "solver_termination": "optimal",
+    "solve_time_s": 2.6589926660526544,
+    "variables": 3219,
+    "constraints": 2598
+  }
+]

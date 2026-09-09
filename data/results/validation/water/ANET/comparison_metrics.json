@@ -1,0 +1,194 @@
+{
+  "pipe_flows": {
+    "112": {
+      "n": 24,
+      "mae": 0.003854,
+      "max_diff": 0.01044,
+      "max_rel_err_pct": 100.0,
+      "mean_rel_err_pct": 26.908343,
+      "correlation": 0.828612
+    },
+    "113": {
+      "n": 24,
+      "mae": 0.001165,
+      "max_diff": 0.003353,
+      "max_rel_err_pct": 258.697026,
+      "mean_rel_err_pct": 43.171119,
+      "correlation": 0.676402
+    },
+    "12": {
+      "n": 24,
+      "mae": 0.001165,
+      "max_diff": 0.003353,
+      "max_rel_err_pct": 46.968601,
+      "mean_rel_err_pct": 15.766065,
+      "correlation": 0.950948
+    },
+    "11": {
+      "n": 24,
+      "mae": 0.009485,
+      "max_diff": 0.059208,
+      "max_rel_err_pct": 100.0,
+      "mean_rel_err_pct": 45.801908,
+      "correlation": 0.945734
+    },
+    "111": {
+      "n": 24,
+      "mae": 0.00235,
+      "max_diff": 0.018598,
+      "max_rel_err_pct": 61.614461,
+      "mean_rel_err_pct": 19.501452,
+      "correlation": 0.950805
+    },
+    "110": {
+      "n": 24,
+      "mae": 0.029494,
+      "max_diff": 0.069399,
+      "max_rel_err_pct": 100.0,
+      "mean_rel_err_pct": 85.820561,
+      "correlation": 0.753526
+    },
+    "31": {
+      "n": 24,
+      "mae": 0.000552,
+      "max_diff": 0.002696,
+      "max_rel_err_pct": 100.0,
+      "mean_rel_err_pct": 42.426507,
+      "correlation": 0.892017
+    },
+    "10": {
+      "n": 24,
+      "mae": 0.006326,
+      "max_diff": 0.077806,
+      "max_rel_err_pct": 64.587746,
+      "mean_rel_err_pct": 6.130763,
+      "correlation": 0.958996
+    },
+    "121": {
+      "n": 24,
+      "mae": 0.002067,
+      "max_diff": 0.006494,
+      "max_rel_err_pct": 100.0,
+      "mean_rel_err_pct": 39.694041,
+      "correlation": 0.950902
+    },
+    "22": {
+      "n": 24,
+      "mae": 0.000974,
+      "max_diff": 0.002853,
+      "max_rel_err_pct": 100.0,
+      "mean_rel_err_pct": 37.400265,
+      "correlation": 0.903332
+    },
+    "122": {
+      "n": 24,
+      "mae": 0.001084,
+      "max_diff": 0.0036,
+      "max_rel_err_pct": 100.0,
+      "mean_rel_err_pct": 38.5506,
+      "correlation": 0.898613
+    },
+    "21": {
+      "n": 24,
+      "mae": 0.001986,
+      "max_diff": 0.01487,
+      "max_rel_err_pct": 100.0,
+      "mean_rel_err_pct": 47.381827,
+      "correlation": 0.826484
+    }
+  },
+  "junction_heads": {
+    "13": {
+      "n": 24,
+      "mae": 23.758326,
+      "max_diff": 67.039516,
+      "max_rel_err_pct": 22.891024,
+      "mean_rel_err_pct": 8.026767,
+      "correlation": -0.4659
+    },
+    "23": {
+      "n": 24,
+      "mae": 23.885698,
+      "max_diff": 67.02246,
+      "max_rel_err_pct": 22.885479,
+      "mean_rel_err_pct": 8.076057,
+      "correlation": -0.463699
+    },
+    "12": {
+      "n": 24,
+      "mae": 23.678978,
+      "max_diff": 67.095435,
+      "max_rel_err_pct": 22.896743,
+      "mean_rel_err_pct": 7.990656,
+      "correlation": -0.515446
+    },
+    "11": {
+      "n": 24,
+      "mae": 23.490624,
+      "max_diff": 60.247539,
+      "max_rel_err_pct": 20.203581,
+      "mean_rel_err_pct": 7.913668,
+      "correlation": -0.819185
+    },
+    "31": {
+      "n": 24,
+      "mae": 24.187973,
+      "max_diff": 65.816955,
+      "max_rel_err_pct": 22.454999,
+      "mean_rel_err_pct": 8.191565,
+      "correlation": -0.300453
+    },
+    "10": {
+      "n": 24,
+      "mae": 23.099162,
+      "max_diff": 52.977228,
+      "max_rel_err_pct": 17.835321,
+      "mean_rel_err_pct": 7.76473,
+      "correlation": -0.871259
+    },
+    "32": {
+      "n": 24,
+      "mae": 24.316027,
+      "max_diff": 66.862454,
+      "max_rel_err_pct": 22.855768,
+      "mean_rel_err_pct": 8.240469,
+      "correlation": -0.199123
+    },
+    "22": {
+      "n": 24,
+      "mae": 23.88335,
+      "max_diff": 66.992708,
+      "max_rel_err_pct": 22.866025,
+      "mean_rel_err_pct": 8.07432,
+      "correlation": -0.485192
+    },
+    "21": {
+      "n": 24,
+      "mae": 23.825241,
+      "max_diff": 64.941153,
+      "max_rel_err_pct": 22.082217,
+      "mean_rel_err_pct": 8.051962,
+      "correlation": -0.549217
+    }
+  },
+  "tank_heads": {
+    "2": {
+      "n": 24,
+      "mae": 4.908626,
+      "max_diff": 12.517203,
+      "max_rel_err_pct": 4.272111,
+      "mean_rel_err_pct": 1.656012,
+      "correlation": -0.130273
+    }
+  },
+  "pump_flows": {
+    "9": {
+      "n": 24,
+      "mae": 0.006326,
+      "max_diff": 0.077806,
+      "max_rel_err_pct": 64.587746,
+      "mean_rel_err_pct": 6.130763,
+      "correlation": 0.958996
+    }
+  }
+}

@@ -1,0 +1,125 @@
+<svg width="1280" height="720" viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="1280" height="720" fill="#FFFFFF"/>
+
+  <!-- Title -->
+  <text x="640" y="52" text-anchor="middle" font-family="Georgia, serif" font-size="31" font-weight="bold" fill="#0E2233">A Water–Energy Nexus Framework for Pump Scheduling</text>
+  <text x="640" y="84" text-anchor="middle" font-size="17" fill="#5B6B7A">Co-optimizing water-network pumps with a grid-constrained energy hub — solved as one MILP</text>
+
+  <!-- ============ WATER CARD ============ -->
+  <g>
+    <rect x="58" y="120" width="470" height="320" rx="14" fill="#F7FAFD" stroke="#E3E8EE" stroke-width="1.5"/>
+    <path d="M58 134 a14 14 0 0 1 14 -14 h442 a14 14 0 0 1 14 14 v44 h-470 z" fill="#1C6DD0"/>
+    <text x="82" y="151" font-size="19" font-weight="bold" fill="#FFFFFF">WATER NETWORK</text>
+    <text x="504" y="151" text-anchor="end" font-size="12.5" fill="#D6E6FA">MILPNet · Thomas &amp; Sela 2024</text>
+    <text x="82" y="170" font-size="12.5" fill="#EAF2FC">input: demand pattern  dᵢᵗ</text>
+
+    <!-- mini schematic: reservoir -> pump -> tank -> demand -->
+    <line x1="120" y1="232" x2="466" y2="232" stroke="#9DB6CE" stroke-width="3"/>
+    <!-- reservoir -->
+    <rect x="100" y="214" width="40" height="36" rx="4" fill="#1C6DD0"/>
+    <text x="120" y="237" text-anchor="middle" font-size="14" font-weight="bold" fill="#FFFFFF">R</text>
+    <text x="120" y="272" text-anchor="middle" font-size="12" fill="#42566B">reservoir</text>
+    <!-- pump (decision, highlighted) -->
+    <circle cx="235" cy="232" r="22" fill="#FFFFFF" stroke="#0B6E4F" stroke-width="3.5"/>
+    <text x="235" y="237" text-anchor="middle" font-size="15" font-weight="bold" fill="#0B6E4F">P</text>
+    <text x="235" y="272" text-anchor="middle" font-size="12" font-weight="bold" fill="#0B6E4F">pump</text>
+    <!-- tank -->
+    <ellipse cx="350" cy="216" rx="20" ry="6" fill="#1C6DD0"/>
+    <rect x="330" y="216" width="40" height="32" fill="#1C6DD0"/>
+    <ellipse cx="350" cy="248" rx="20" ry="6" fill="#155AAE"/>
+    <text x="350" y="272" text-anchor="middle" font-size="12" fill="#42566B">tank</text>
+    <!-- demand (house) -->
+    <path d="M444 250 v-22 l16 -12 l16 12 v22 z" fill="#1C6DD0"/>
+    <text x="460" y="272" text-anchor="middle" font-size="12" fill="#42566B">demand</text>
+
+    <!-- features -->
+    <text x="84" y="312" font-size="14" fill="#1F3346">•  Mass balance &amp; Hazen–Williams head loss (PWL)</text>
+    <text x="84" y="338" font-size="14" fill="#1F3346">•  Tank dynamics, pump curve, valves</text>
+    <text x="84" y="364" font-size="14" fill="#1F3346">•  On/off scheduling + switching limits</text>
+
+    <!-- decision chip -->
+    <rect x="84" y="388" width="300" height="34" rx="17" fill="#EAF2FC" stroke="#1C6DD0" stroke-width="1.2"/>
+    <text x="100" y="410" font-size="14" fill="#0B4F8A">Decision:  pump on/off  <tspan font-weight="bold">yₚᵗ</tspan></text>
+  </g>
+
+  <!-- ============ ENERGY CARD ============ -->
+  <g>
+    <rect x="752" y="120" width="470" height="320" rx="14" fill="#FCF9F3" stroke="#E3E8EE" stroke-width="1.5"/>
+    <path d="M752 134 a14 14 0 0 1 14 -14 h442 a14 14 0 0 1 14 14 v44 h-470 z" fill="#C8901B"/>
+    <text x="776" y="151" font-size="19" font-weight="bold" fill="#FFFFFF">ENERGY HUB + GRID</text>
+    <text x="1198" y="151" text-anchor="end" font-size="12.5" fill="#FBEFD6">Morvaj et al. 2016</text>
+    <text x="776" y="170" font-size="12.5" fill="#FBF1DC">inputs: tariff  cₜ ,  PV irradiance</text>
+
+    <!-- schematic: grid - bus - PV / battery -->
+    <!-- bus bar -->
+    <rect x="930" y="206" width="8" height="84" rx="3" fill="#0E2233"/>
+    <text x="934" y="304" text-anchor="middle" font-size="12" fill="#42566B">bus</text>
+    <!-- grid (pylon-ish) -->
+    <line x1="838" y1="248" x2="930" y2="248" stroke="#B98A2E" stroke-width="3"/>
+    <rect x="800" y="226" width="38" height="44" rx="4" fill="#C8901B"/>
+    <text x="819" y="252" text-anchor="middle" font-size="12" font-weight="bold" fill="#FFFFFF">grid</text>
+    <text x="819" y="288" text-anchor="middle" font-size="11.5" fill="#42566B">import/export</text>
+    <!-- PV sun -->
+    <line x1="938" y1="226" x2="1052" y2="210" stroke="#B98A2E" stroke-width="3"/>
+    <circle cx="1070" cy="208" r="15" fill="#F4B400"/>
+    <g stroke="#F4B400" stroke-width="2.4">
+      <line x1="1070" y1="184" x2="1070" y2="176"/><line x1="1070" y1="232" x2="1070" y2="240"/>
+      <line x1="1046" y1="208" x2="1038" y2="208"/><line x1="1094" y1="208" x2="1102" y2="208"/>
+      <line x1="1053" y1="191" x2="1047" y2="185"/><line x1="1087" y1="225" x2="1093" y2="231"/>
+      <line x1="1087" y1="191" x2="1093" y2="185"/><line x1="1053" y1="225" x2="1047" y2="231"/>
+    </g>
+    <text x="1070" y="262" text-anchor="middle" font-size="12" fill="#42566B">PV</text>
+    <!-- battery -->
+    <line x1="938" y1="270" x2="1052" y2="290" stroke="#B98A2E" stroke-width="3"/>
+    <rect x="1052" y="278" width="40" height="26" rx="3" fill="#FFFFFF" stroke="#C8901B" stroke-width="2.5"/>
+    <rect x="1092" y="285" width="5" height="12" rx="1" fill="#C8901B"/>
+    <text x="1072" y="322" text-anchor="middle" font-size="12" fill="#42566B">storage</text>
+
+    <!-- features -->
+    <text x="776" y="346" font-size="14" fill="#2A2113">•  Energy hub: PV + battery dispatch</text>
+    <text x="776" y="372" font-size="14" fill="#2A2113">•  Linearized AC power flow · voltage &amp; thermal limits</text>
+
+    <!-- state chip -->
+    <rect x="776" y="392" width="320" height="34" rx="17" fill="#FBF1DC" stroke="#C8901B" stroke-width="1.2"/>
+    <text x="792" y="414" font-size="14" fill="#8A6200">State:  storage SoC,  bus voltages</text>
+  </g>
+
+  <!-- ============ COUPLING ============ -->
+  <g>
+    <text x="640" y="150" text-anchor="middle" font-size="13" font-weight="bold" fill="#0B6E4F" letter-spacing="1.5">COUPLING</text>
+    <!-- forward arrow: water -> energy -->
+    <defs>
+      <marker id="agreen" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#0B6E4F"/></marker>
+      <marker id="agreenL" markerWidth="9" markerHeight="9" refX="0" refY="3" orient="auto"><path d="M6 0 L0 3 L6 6 z" fill="#0B6E4F"/></marker>
+    </defs>
+    <line x1="532" y1="248" x2="748" y2="248" stroke="#0B6E4F" stroke-width="3.5" marker-end="url(#agreen)"/>
+    <text x="640" y="238" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#0B6E4F">pump load  P̄ₚ·yₚᵗ  [kW]</text>
+    <!-- return arrow: energy -> water -->
+    <line x1="748" y1="318" x2="532" y2="318" stroke="#0B6E4F" stroke-width="3.5" marker-end="url(#agreenL)"/>
+    <text x="640" y="338" text-anchor="middle" font-size="14.5" fill="#0B6E4F">cost signal + grid limits</text>
+    <!-- co-optimized tag -->
+    <rect x="582" y="272" width="116" height="26" rx="13" fill="#E3F1EA" stroke="#0B6E4F" stroke-width="1.2"/>
+    <text x="640" y="290" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0B6E4F">co-optimized</text>
+  </g>
+
+  <!-- ============ JOINT MILP BAND ============ -->
+  <g>
+    <rect x="58" y="470" width="1164" height="150" rx="14" fill="#0E2233"/>
+    <text x="640" y="506" text-anchor="middle" font-family="Georgia, serif" font-size="20" font-weight="bold" fill="#FFFFFF">Solved as a single MILP</text>
+
+    <!-- objective -->
+    <rect x="92" y="528" width="540" height="74" rx="10" fill="#16314A"/>
+    <text x="116" y="556" font-size="14" font-weight="bold" fill="#7FD1B9">OBJECTIVE</text>
+    <text x="116" y="580" font-size="14.5" fill="#E7EEF5">minimize net grid-electricity cost</text>
+    <text x="116" y="600" font-size="14.5" fill="#E7EEF5">(import − export) + pump switching penalty</text>
+
+    <!-- result -->
+    <rect x="648" y="528" width="540" height="74" rx="10" fill="#16314A"/>
+    <text x="672" y="556" font-size="14" font-weight="bold" fill="#F4C770">RESULT</text>
+    <text x="672" y="580" font-size="14.5" fill="#E7EEF5">pump schedule co-optimized with PV &amp; storage,</text>
+    <text x="672" y="600" font-size="14.5" fill="#E7EEF5">feasible under grid voltage &amp; thermal limits</text>
+  </g>
+
+  <!-- footer -->
+  <text x="640" y="648" text-anchor="middle" font-size="12.5" fill="#8A97A4">Backbone: MILPNet hydraulics (Thomas &amp; Sela, 2024)  +  energy-hub &amp; distribution-grid model (Morvaj et al., 2016)</text>
+</svg>

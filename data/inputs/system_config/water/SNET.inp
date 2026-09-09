@@ -1,0 +1,71 @@
+[TITLE]
+SNET - Simple network to illustrate the water-energy (pump) nexus
+One reservoir, one pump, one demand junction, one storage tank.
+Pump duty-cycles on tank level + diurnal demand -> a clean, nonzero
+mean pump load (~19.5 kW) for the nexus electrical coupling.
+
+[JUNCTIONS]
+;ID   Elev   Demand   Pattern
+ N1   0      0                     ;pump discharge node
+ N2   0      25       DEM          ;demand node (25 LPS average)
+
+[RESERVOIRS]
+;ID   Head   Pattern
+ R1   0                            ;source at ground level
+
+[TANKS]
+;ID   Elev   InitLvl  MinLvl  MaxLvl  Diam   MinVol  VolCurve
+ T1   25     3        0       6       12     0                ;elevated storage
+
+[PIPES]
+;ID   Node1  Node2  Length  Diam   Rough  MinorLoss  Status
+ P1   N1     N2     500     300    130    0          Open  ;pump -> demand
+ P2   N2     T1     100     400    130    0          Open  ;demand <-> tank
+
+[PUMPS]
+;ID   Node1  Node2  Parameters
+ PU1  R1     N1     HEAD C1        ;lift from reservoir to N1
+
+[CURVES]
+;ID   X(flow LPS)  Y(head m)
+ C1   50           40             ;single design point -> EPANET builds the curve
+
+[PATTERNS]
+;ID   Multipliers (24 hourly values, diurnal demand)
+ DEM  0.5  0.4  0.4  0.5  0.7  1.0  1.4  1.6  1.5  1.3  1.2  1.1
+ DEM  1.0  1.0  1.1  1.2  1.4  1.6  1.5  1.3  1.0  0.8  0.6  0.5
+
+[CONTROLS]
+ LINK PU1 OPEN  IF NODE T1 BELOW 1.5
+ LINK PU1 CLOSED IF NODE T1 ABOVE 5.5
+
+[TIMES]
+ Duration            24:00
+ Hydraulic Timestep  1:00
+ Pattern Timestep    1:00
+ Report Timestep     1:00
+ Pattern Start       0:00
+ Report Start        0:00
+ Start ClockTime     12 am
+ Statistic           NONE
+
+[OPTIONS]
+ Units               LPS
+ Headloss            H-W
+ Specific Gravity    1.0
+ Viscosity           1.0
+ Trials              40
+ Accuracy            0.001
+ Unbalanced          Continue 10
+ Pattern             1
+ Demand Multiplier   1.0
+ Tolerance           0.01
+
+[COORDINATES]
+;Node  X      Y
+ R1    0      50
+ N1    10     50
+ N2    30     50
+ T1    30     80
+
+[END]

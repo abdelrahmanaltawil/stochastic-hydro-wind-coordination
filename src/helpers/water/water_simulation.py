@@ -7,11 +7,14 @@ Not a standalone workflow — call these functions from tests or workflow.py.
 
 import json
 import logging
+import os
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
 import wntr
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Network loading
@@ -28,6 +31,9 @@ def load_water_network(inp_file: str) -> wntr.network.WaterNetworkModel:
     """
     if not inp_file:
         raise ValueError("No inp_file specified.")
+    inp_file = str(Path(inp_file).expanduser().resolve())
+    if not Path(inp_file).is_file():
+        raise FileNotFoundError(inp_file)
     logger.info(f"Loading water network: {inp_file}")
     wn = wntr.network.WaterNetworkModel(inp_file)
     logger.debug(f"Loaded: {wn.num_nodes} nodes, {wn.num_links} links")
@@ -53,12 +59,17 @@ def run_water_simulation(
     """
     logger.info(f"Running water simulation ({simulator_type.upper()})")
 
-    if simulator_type.lower() == "epanet":
-        sim = wntr.sim.EpanetSimulator(wn)
-    else:
-        sim = wntr.sim.WNTRSimulator(wn)
-
-    results = sim.run_sim()
+    cwd = os.getcwd()
+    try:
+        if simulator_type.lower() == "epanet":
+            with tempfile.TemporaryDirectory(prefix="econex-epanet-") as directory:
+                results = wntr.sim.EpanetSimulator(wn).run_sim(file_prefix=str(Path(directory) / "network"))
+        elif simulator_type.lower() == "wntr":
+            results = wntr.sim.WNTRSimulator(wn).run_sim()
+        else:
+            raise ValueError(f"Unknown simulator_type {simulator_type!r}; use 'wntr' or 'epanet'")
+    finally:
+        os.chdir(cwd)
     logger.info("Water simulation completed")
     _log_simulation_summary(results, wn)
     return results
@@ -115,7 +126,7 @@ def create_water_summary(
             "min": float(pressure.min().min()),
             "max": float(pressure.max().max()),
             "mean": float(pressure.mean().mean()),
-            "std": float(pressure.std().mean()),
+            "std": float(pressure.std(ddof=0).mean()),
         }
         above = (pressure >= min_pressure_threshold).sum().sum()
         metrics["service_satisfaction"] = float(above / pressure.size) if pressure.size else 0.0

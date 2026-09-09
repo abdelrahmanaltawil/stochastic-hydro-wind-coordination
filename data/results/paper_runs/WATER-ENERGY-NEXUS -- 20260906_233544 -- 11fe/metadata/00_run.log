@@ -1,0 +1,33 @@
+2026-09-06 23:35:44,926 [INFO] utils - Collecting run environment and versioning details...
+2026-09-06 23:35:44,926 [INFO] utils - Experiment ID: 11fe (started at 2026-09-06T23:35:44.926318)
+2026-09-06 23:35:44,927 [INFO] utils - Experiment results will be saved to: /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/results/paper_runs/WATER-ENERGY-NEXUS -- 20260906_233544 -- 11fe
+
+
+2026-09-06 23:35:44,927 [INFO] workflow - Starting 24-hour schedule in /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/results/paper_runs/WATER-ENERGY-NEXUS -- 20260906_233544 -- 11fe
+2026-09-06 23:35:44,942 [INFO] preprocessing - EPANET pre-simulation: 3 links over 24 h
+2026-09-06 23:35:44,943 [INFO] preprocessing - Loaded water network: /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/inputs/system_config/water/SNET.inp
+2026-09-06 23:35:44,943 [INFO] energy_simulation - Compiling OpenDSS circuit: /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/inputs/system_config/energy/master.dss
+2026-09-06 23:35:44,945 [INFO] preprocessing - Loaded energy network: /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/inputs/system_config/energy/master.dss
+2026-09-06 23:35:44,946 [INFO] algorithm_tasks - Building water sub-model from /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/inputs/system_config/water/SNET.inp
+2026-09-06 23:35:44,947 [INFO] algorithm_tasks - Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+2026-09-06 23:35:45,008 [INFO] algorithm_tasks - Nexus: reusing shared EPANET pre-simulation for pump power
+2026-09-06 23:35:45,009 [INFO] algorithm_tasks - Water sub-model: 4 nodes, 3 links, 1 pumps
+2026-09-06 23:35:45,023 [INFO] algorithm_tasks - Energy sub-model: 2 buses, 1 lines
+2026-09-06 23:35:45,024 [INFO] algorithm_tasks - Nexus: reusing shared EPANET pre-simulation for pump power
+2026-09-06 23:35:45,025 [INFO] algorithm_tasks - Nexus coupling active: 1 pumps, total mean pump load 25.95 kW (η=0.75); pump electricity now priced through the energy import tariff.
+2026-09-06 23:35:45,026 [INFO] algorithm_tasks - Model assembled successfully
+2026-09-06 23:35:45,036 [INFO] algorithm_tasks - Solving with highs (timeout=120s)
+2026-09-06 23:37:45,121 [WARNING] PyomoModel - Loading a SolverResults object with an 'aborted' status, but containing a solution
+2026-09-06 23:37:45,124 [INFO] algorithm_tasks - Solver finished: aborted / maxTimeLimit
+2026-09-06 23:37:45,154 [INFO] postprocessing - Saved /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/results/paper_runs/WATER-ENERGY-NEXUS -- 20260906_233544 -- 11fe/00_summary.json
+2026-09-06 23:37:45,162 [INFO] postprocessing - Saved /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/results/paper_runs/WATER-ENERGY-NEXUS -- 20260906_233544 -- 11fe/water_data/00_flows.csv
+2026-09-06 23:37:45,163 [INFO] postprocessing - Saved /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/results/paper_runs/WATER-ENERGY-NEXUS -- 20260906_233544 -- 11fe/water_data/00_heads.csv
+2026-09-06 23:37:45,164 [INFO] postprocessing - Saved /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/results/paper_runs/WATER-ENERGY-NEXUS -- 20260906_233544 -- 11fe/water_data/00_pump_status.csv
+2026-09-06 23:37:45,165 [INFO] postprocessing - Saved /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/results/paper_runs/WATER-ENERGY-NEXUS -- 20260906_233544 -- 11fe/water_data/00_slack.csv
+2026-09-06 23:37:45,166 [INFO] postprocessing - Saved /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/results/paper_runs/WATER-ENERGY-NEXUS -- 20260906_233544 -- 11fe/energy_data/00_dispatch.csv
+2026-09-06 23:37:45,166 [INFO] postprocessing - Saved /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/results/paper_runs/WATER-ENERGY-NEXUS -- 20260906_233544 -- 11fe/energy_data/00_soc.csv
+2026-09-06 23:37:45,167 [INFO] postprocessing - Saved /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/results/paper_runs/WATER-ENERGY-NEXUS -- 20260906_233544 -- 11fe/energy_data/00_line_flows.csv
+2026-09-06 23:37:45,168 [INFO] postprocessing - Saved /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/results/paper_runs/WATER-ENERGY-NEXUS -- 20260906_233544 -- 11fe/energy_data/00_voltages.csv
+2026-09-06 23:37:45,222 [INFO] postprocessing - Saved /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/results/paper_runs/WATER-ENERGY-NEXUS -- 20260906_233544 -- 11fe/metadata/00_run_metadata.yaml
+2026-09-06 23:37:45,223 [INFO] postprocessing - Saved /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/results/paper_runs/WATER-ENERGY-NEXUS -- 20260906_233544 -- 11fe/metadata/inputs/00_experiment_parameters.yaml
+2026-09-06 23:37:45,224 [INFO] workflow - Pipeline completed: /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/results/paper_runs/WATER-ENERGY-NEXUS -- 20260906_233544 -- 11fe

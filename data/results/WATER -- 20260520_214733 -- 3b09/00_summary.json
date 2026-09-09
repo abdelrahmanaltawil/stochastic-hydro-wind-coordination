@@ -1,0 +1,10 @@
+{
+  "run_id": "WATER -- 20260520_214733 -- 3b09",
+  "solver_status": "aborted",
+  "termination_condition": "error",
+  "objective_value": 30627895.960024577,
+  "solver_time_s": "N/A",
+  "num_variables": 4032,
+  "num_constraints": 3718,
+  "water_slack_violations": 11
+}

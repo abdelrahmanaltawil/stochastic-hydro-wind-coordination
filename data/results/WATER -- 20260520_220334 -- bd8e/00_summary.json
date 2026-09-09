@@ -1,0 +1,9 @@
+{
+  "run_id": "WATER -- 20260520_220334 -- bd8e",
+  "solver_status": "ok",
+  "termination_condition": "optimal",
+  "objective_value": 11.659068294719921,
+  "solver_time_s": "N/A",
+  "num_variables": 4032,
+  "num_constraints": 3718
+}

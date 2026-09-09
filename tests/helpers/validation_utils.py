@@ -1,15 +1,15 @@
-"""Validation utilities for comparing optimization vs. simulation results.
+"""Notebook-compatible validation helpers backed by independent schedule replay.
 
-Used by test_algorithm_tasks.py to run end-to-end scenarios, extract
-time series from both the Pyomo model and WNTR/EPANET simulation, and
-assert they agree within tolerance.
+New work should import ``src.validation``. The legacy runner names remain, but
+now solve the actual model and replay its decisions; they do not fit hydraulic
+constraints to the same simulation used as the comparison target.
 """
-
 import contextlib
 import json
 import logging
+import tempfile
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,156 +18,90 @@ import pyomo.environ as pyo
 import wntr
 
 from src.algorithm_tasks import build_model, solve_model
-from src.helpers.energy.energy_simulation import run_energy_simulation
-from src.helpers.water.water_simulation import load_water_network, run_water_simulation
-from src.preprocessing import _build_energy_data
+from src.preprocessing import load_networks
+from src.validation import replay_water, replay_energy
 
 logger = logging.getLogger("econex.tests.validation")
 
 
-# ---------------------------------------------------------------------------
-# Logging context manager
-# ---------------------------------------------------------------------------
-
 @contextlib.contextmanager
 def validation_logging(report_file: Path):
-    """Route validation logs to a dedicated file for the duration of a test."""
-    log = logging.getLogger("econex.tests.validation")
-    for h in log.handlers[:]:
-        log.removeHandler(h)
-
-    fhandler = logging.FileHandler(report_file, mode="w")
-    fhandler.setFormatter(logging.Formatter(
-        "%(asctime)s | %(levelname)-8s | %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    ))
-    log.addHandler(fhandler)
-    log.setLevel(logging.DEBUG)
-    log.info(f"Test Report — {report_file.parent.name}")
-    log.info("=" * 60)
+    report_file = Path(report_file)
+    report_file.parent.mkdir(parents=True, exist_ok=True)
+    handler = logging.FileHandler(report_file, mode="w")
+    handler.setFormatter(logging.Formatter("%(asctime)s | %(levelname)-8s | %(message)s"))
+    previous_level = logger.level
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
     try:
-        yield log
+        yield logger
     finally:
-        log.info("=" * 60)
-        log.info("End of Report")
-        fhandler.close()
-        log.removeHandler(fhandler)
+        logger.removeHandler(handler)
+        handler.close()
+        logger.setLevel(previous_level)
 
 
-# ---------------------------------------------------------------------------
-# Metric computation
-# ---------------------------------------------------------------------------
-
-def compare_series(
-    opt_series: Union[pd.Series, np.ndarray, float],
-    sim_series: Union[pd.Series, np.ndarray, float],
-) -> Dict:
-    """Compute comparison metrics between an optimization and simulation series.
-
-    Returns:
-        Dict with n, mae, max_diff, max_rel_err_pct, mean_rel_err_pct,
-        correlation, and internal arrays prefixed with '_'.
-    """
-    opt_arr = np.atleast_1d(opt_series).astype(float)
-    sim_arr = np.atleast_1d(sim_series).astype(float)
-    min_len = min(len(opt_arr), len(sim_arr))
-    opt_arr, sim_arr = opt_arr[:min_len], sim_arr[:min_len]
-
-    abs_diff = np.abs(opt_arr - sim_arr)
-    with np.errstate(divide="ignore", invalid="ignore"):
-        rel_err = abs_diff / np.abs(sim_arr)
-        rel_err[np.abs(sim_arr) < 1e-6] = np.nan
-
-    corr = (float(np.corrcoef(opt_arr, sim_arr)[0, 1])
-            if np.std(opt_arr) > 1e-9 and np.std(sim_arr) > 1e-9
-            else (1.0 if np.allclose(opt_arr, sim_arr) else 0.0))
-
-    return {
-        "n": len(opt_arr),
-        "mae": float(np.mean(abs_diff)),
-        "max_diff": float(np.max(abs_diff)),
-        "max_rel_err_pct": float(np.nanmax(rel_err) * 100) if not np.all(np.isnan(rel_err)) else 0.0,
-        "mean_rel_err_pct": float(np.nanmean(rel_err) * 100) if not np.all(np.isnan(rel_err)) else 0.0,
-        "correlation": corr,
-    }
+def compare_series(opt_series, sim_series) -> Dict:
+    """Compare complete, finite trajectories; never truncate a mismatch."""
+    first = np.atleast_1d(opt_series).astype(float)
+    second = np.atleast_1d(sim_series).astype(float)
+    if first.shape != second.shape or not first.size:
+        raise ValueError("Comparison series must have the same nonzero shape")
+    if not np.isfinite(first).all() or not np.isfinite(second).all():
+        raise ValueError("Comparison series must contain only finite values")
+    error = np.abs(first - second)
+    nonzero = np.abs(second) >= 1e-6
+    relative = error[nonzero] / np.abs(second[nonzero])
+    correlation = (float(np.corrcoef(first, second)[0, 1])
+                   if np.std(first) > 1e-9 and np.std(second) > 1e-9
+                   else float(np.allclose(first, second)))
+    return {"n": int(first.size), "mae": float(error.mean()), "max_diff": float(error.max()),
+            "max_rel_err_pct": float(relative.max() * 100) if relative.size else 0.0,
+            "mean_rel_err_pct": float(relative.mean() * 100) if relative.size else 0.0,
+            "correlation": correlation}
 
 
+def extract_water_opt_timeseries(model, wn) -> Dict:
+    times = list(model.T)
+    index = [t * pyo.value(model.dt) for t in times]
+    def frame(names, var):
+        return pd.DataFrame({name: [pyo.value(var[name, t]) for t in times] for name in names}, index=index)
+    return {"tank_heads": frame(wn.tank_name_list, model.H),
+            "junction_heads": frame(wn.junction_name_list, model.H),
+            "pump_flows": frame(wn.pump_name_list, model.Q),
+            "pipe_flows": frame(wn.pipe_name_list, model.Q)}
 
 
+def extract_water_sim_timeseries(wn, sim_results, num_steps) -> Dict:
+    index = [t * wn.options.time.report_timestep for t in range(num_steps)]
+    return {"tank_heads": sim_results.node["head"].loc[index, wn.tank_name_list],
+            "junction_heads": sim_results.node["head"].loc[index, wn.junction_name_list],
+            "pump_flows": sim_results.link["flowrate"].loc[index, wn.pump_name_list],
+            "pipe_flows": sim_results.link["flowrate"].loc[index, wn.pipe_name_list]}
 
 
-# Time series extraction
-# ---------------------------------------------------------------------------
-
-def extract_water_opt_timeseries(model: pyo.ConcreteModel,
-                                    wn: wntr.network.WaterNetworkModel) -> Dict:
-    """Extract head and flow time series from a solved Pyomo model."""
-    time_steps = list(model.T)
-    dt = pyo.value(model.dt)
-    time_index = [t * dt for t in time_steps]
-
-    def extract_var(names, var, attr="T"):
-        out = {}
-        for name in names:
-            if name in getattr(model, attr if attr != "T" else "Nodes", []) or True:
-                try:
-                    out[name] = [pyo.value(var[name, t]) for t in time_steps]
-                except Exception:
-                    pass
-        return pd.DataFrame(out, index=time_index)
-
-    return {
-        "tank_heads":    extract_var(wn.tank_name_list, model.H),
-        "junction_heads": extract_var(wn.junction_name_list, model.H),
-        "pump_flows":    extract_var(wn.pump_name_list, model.Q),
-        "pipe_flows":    extract_var(wn.pipe_name_list, model.Q),
-    }
-
-
-def extract_water_sim_timeseries(wn: wntr.network.WaterNetworkModel,
-                                   sim_results, num_steps: int) -> Dict:
-    """Extract head and flow time series from WNTR simulation results."""
-    timestep = wn.options.time.report_timestep
-    time_index = list(range(0, num_steps * timestep, timestep))[:num_steps]
-
-    def safe_extract(df, name):
-        try:
-            return df[name].loc[time_index].values
-        except Exception:
-            return df[name].values[:num_steps]
-
-    return {
-        "tank_heads":    pd.DataFrame({t: safe_extract(sim_results.node["head"], t) for t in wn.tank_name_list}, index=time_index),
-        "junction_heads": pd.DataFrame({t: safe_extract(sim_results.node["head"], t) for t in wn.junction_name_list}, index=time_index),
-        "pump_flows":    pd.DataFrame({t: safe_extract(sim_results.link["flowrate"], t) for t in wn.pump_name_list}, index=time_index),
-        "pipe_flows":    pd.DataFrame({t: safe_extract(sim_results.link["flowrate"], t) for t in wn.pipe_name_list}, index=time_index),
-    }
+def extract_energy_opt_timeseries(model, buses, lines) -> Dict:
+    times = list(model.T)
+    index = [t * pyo.value(model.dt) for t in times]
+    return {"voltage_pu": pd.DataFrame({b: [pyo.value(model.U[b, t]) for t in times]
+                                       for b in buses}, index=index),
+            "P_kw": pd.DataFrame({b: [pyo.value(model.P_import[b, t] - model.P_export[b, t])
+                                       for t in times] for b in buses}, index=index)}
 
 
 def compute_comparison_metrics(opt_data: Dict, sim_data: Dict) -> Dict:
-    """Compute MAE, max error, and correlation for each component and data type."""
     metrics = {}
-    dtypes = set(opt_data.keys()) | set(sim_data.keys())
-    for dtype in dtypes:
-        opt_df = opt_data.get(dtype, pd.DataFrame())
-        sim_df = sim_data.get(dtype, pd.DataFrame())
-        if opt_df.empty or sim_df.empty:
+    for name in sorted(opt_data.keys() & sim_data.keys()):
+        opt, sim = opt_data[name], sim_data[name]
+        if opt.empty or sim.empty:
             continue
-        common = set(opt_df.columns) & set(sim_df.columns)
-        if not common:
-            continue
-        metrics[dtype] = {
-            col: {k: round(v, 6) for k, v in compare_series(
-                opt_df[col].values, sim_df[col].values[:len(opt_df)]
-            ).items()}
-            for col in common
-        }
+        if not opt.index.equals(sim.index):
+            raise ValueError(f"Time indices do not match for {name}")
+        common = sorted(set(opt.columns) & set(sim.columns))
+        metrics[name] = {column: compare_series(opt[column].values, sim[column].values)
+                         for column in common}
     return metrics
 
-
-# ---------------------------------------------------------------------------
-# Plotting
-# ---------------------------------------------------------------------------
 
 def plot_validation_results(opt_data: Dict, sim_data: Dict, save_dir: Path) -> None:
     """Generate and save overlay plots for Pyomo vs. Simulation time series."""
@@ -208,10 +142,10 @@ def plot_validation_results(opt_data: Dict, sim_data: Dict, save_dir: Path) -> N
             for idx, col in enumerate(chunk):
                 ax = axes[idx]
                 opt_series = opt_df[col].values
-                sim_series = sim_df[col].values[:len(opt_series)]
-                t_hours = np.arange(len(opt_series))
+                sim_series = sim_df.loc[opt_df.index, col].values
+                t_hours = np.asarray(opt_df.index, dtype=float) / 3600
                 
-                ax.plot(t_hours, sim_series, label='EPANET Simulation', linestyle='--', marker='o', alpha=0.7)
+                ax.plot(t_hours, sim_series, label='Nonlinear simulation', linestyle='--', marker='o', alpha=0.7)
                 ax.plot(t_hours, opt_series, label='Pyomo Optimization', linestyle='-', alpha=0.7)
                 
                 ax.set_title(f"{dtype.replace('_', ' ').title()} - {col}")
@@ -229,220 +163,55 @@ def plot_validation_results(opt_data: Dict, sim_data: Dict, save_dir: Path) -> N
             plt.close()
 
 
-def extract_energy_opt_timeseries(model: pyo.ConcreteModel, buses: list, lines: list) -> Dict:
-    """Extract voltage, power, and current time series from a solved Pyomo model."""
-    time_steps = list(model.T)
-    dt = pyo.value(model.dt)
-    time_index = [t * dt for t in time_steps]
-
-    def extract_var(names, var):
-        out = {}
-        for name in names:
-            if name in getattr(model, var.name.split('[')[0], getattr(model, "Buses", [])):
-                try:
-                    out[name] = [pyo.value(var[name, t]) for t in time_steps]
-                except Exception:
-                    pass
-        return pd.DataFrame(out, index=time_index)
-        
-    line_names = list(model.ELines) if hasattr(model, "ELines") else []
-    
-    # Calculate net power injection: import - export
-    P_injections = {}
-    Q_injections = {} # Q is not modeled as injection variable directly, maybe just 0
-    for b in buses:
-        if hasattr(model, "Buses") and b in model.Buses:
-            try:
-                P_inj = [pyo.value(model.P_import[b,t]) - pyo.value(model.P_export[b,t]) for t in time_steps]
-                P_injections[b] = P_inj
-            except:
-                pass
-
-    return {
-        "voltage_pu": extract_var(buses, getattr(model, "U", None)) if hasattr(model, "U") else pd.DataFrame(),
-        "P_kw": pd.DataFrame(P_injections, index=time_index),
-        # Current mag approx: sqrt(phi^2 + chi^2), maybe later if needed
-    }
-
-
-def run_energy_validation(
-    dss_file: str,
-    num_timesteps: int = 24,
-    solver: str = "gurobi",
-    save_dir: Path = None,
-) -> dict:
-    """Build, solve, simulate, and compare results for an energy network scenario."""
-    if save_dir:
-        save_dir.mkdir(parents=True, exist_ok=True)
-
-    logger.info(f"Energy Scenario: {Path(dss_file).name} | T={num_timesteps} | solver={solver}")
-
-    # Build and solve
-    config = {"run_water": False, "run_energy": True, "run_nexus": False, "T": num_timesteps}
-    
-    # We must construct a valid energy_cfg to pass to build_model. 
-    # Since preprocessing uses a placeholder, the models might not align! 
-    # But we run it anyway to test the flow.
-    energy_cfg = {"network": dss_file, "technologies": {}, "cost": {}}
-    energy_data = _build_energy_data(energy_cfg, Path(dss_file), num_timesteps)
-    data = {"energy": energy_data}
-
-    model = build_model(data, config)
-    if hasattr(model, "objective"):
-        model.del_component(model.objective)
-    model.objective = pyo.Objective(expr=0, sense=pyo.minimize)
-
-    model, results = solve_model(model, solver=solver, tee=False)
-    term = results.solver.termination_condition
-    logger.info(f"Solver termination: {term}")
-
-    if term != pyo.TerminationCondition.optimal:
-        return {"status": "infeasible", "termination": str(term)}
-
-    # Simulate
-    sim_results = run_energy_simulation(dss_file, mode="daily")
-    
-    # Map simulation index from hour steps to seconds to match optimization dt
-    dt = 3600
-    sim_time_index = [t * dt for t in range(num_timesteps)]
-    
-    sim_data = {
-        "voltage_pu": pd.DataFrame(sim_results["node"]["voltage_pu"]).set_index(pd.Index(sim_time_index)),
-        "P_kw": pd.DataFrame(sim_results["node"]["P_kw"]).set_index(pd.Index(sim_time_index)),
-        "Q_kvar": pd.DataFrame(sim_results["node"]["Q_kvar"]).set_index(pd.Index(sim_time_index)),
-        "current_amps": pd.DataFrame(sim_results["link"]["current_amps"]).set_index(pd.Index(sim_time_index)),
-    }
-
-    opt_data = extract_energy_opt_timeseries(model, energy_data["buses"], energy_data["lines"])
+def run_energy_validation(dss_file: str, num_timesteps: int = 24,
+                          solver: str = "highs", save_dir: Path = None) -> dict:
+    """Solve the energy-only model and independently replay AC bus injections."""
+    config = {"run_water": False, "run_energy": True, "run_nexus": False,
+              "T": num_timesteps, "energy": {"network": str(Path(dss_file).resolve())}}
+    data = load_networks(config)
+    model, result, _ = solve_model(build_model(data, config), solver=solver, timeout=120)
+    with tempfile.TemporaryDirectory(prefix="econex-validation-") as scratch:
+        output = Path(save_dir or scratch)
+        replay = replay_energy(model, data["energy"], output)
+        frame = pd.read_csv(output / "energy_replay_voltages.csv")
+        frame["time"] *= 3600
+        sim_data = {"voltage_pu": frame.pivot(index="time", columns="bus", values="voltage_pu")}
+    opt_data = extract_energy_opt_timeseries(model, data["energy"]["buses"], data["energy"]["lines"])
     metrics = compute_comparison_metrics(opt_data, sim_data)
-
     if save_dir:
-        with open(save_dir / "comparison_metrics.json", "w") as f:
-            json.dump(metrics, f, indent=2)
-            
-        plot_validation_results(opt_data, sim_data, save_dir)
+        Path(save_dir, "comparison_metrics.json").write_text(json.dumps(metrics, indent=2))
+        plot_validation_results(opt_data, sim_data, Path(save_dir))
+    return {"status": "completed", "termination": str(result.solver.termination_condition),
+            "metrics": metrics, "replay_metrics": replay, "opt_data": opt_data, "sim_data": sim_data}
 
-    return {
-        "status": "completed",
-        "metrics": metrics,
-        "opt_data": opt_data,
-        "sim_data": sim_data,
-    }
 
-# ---------------------------------------------------------------------------
-# End-to-end scenario runner
-# ---------------------------------------------------------------------------
+def run_water_validation(inp_file: str, num_timesteps: int = 24,
+                         solver: str = "highs", save_dir: Path = None) -> dict:
+    """Solve the water-only model and independently replay optimized pump status.
 
-def run_water_validation(
-    inp_file: str,
-    num_timesteps: int = 24,
-    solver: str = "gurobi",
-    save_dir: Path = None,
-) -> dict:
-    """Build, solve, simulate, and compare results for a water network scenario.
-
-    Builds the water-only optimization model, solves with a zero objective
-    (feasibility check), runs EPANET simulation, and returns comparison metrics.
-
-    Args:
-        inp_file:       Path to EPANET .inp file.
-        num_timesteps:  Number of hourly time steps (default 24).
-        solver:         MILP solver name.
-        save_dir:       Optional directory to save metrics JSON and plots.
-
-    Returns:
-        Dict with 'status', 'metrics', 'opt_data', 'sim_data'.
+    Legacy timeseries compare interval starts; ``replay_metrics`` additionally
+    includes terminal tank states and pressure/status feasibility observations.
     """
-    if save_dir:
-        save_dir.mkdir(parents=True, exist_ok=True)
-
-    logger.info(f"Scenario: {Path(inp_file).name} | T={num_timesteps} | solver={solver}")
-
-    # --- Step 1: Run EPANET simulation ---
-    wn = load_water_network(inp_file)
-    wn.options.time.duration = num_timesteps * 3600
-    wn.options.time.hydraulic_timestep = 3600
-    wn.options.time.report_timestep = 3600
-    # Do NOT override pattern_timestep — must stay at the .inp file's original value.
-    sim_results = run_water_simulation(wn, simulator_type="epanet")
-
-    # Extract per-pipe and per-pump per-timestep flows for linearized head loss.
-    # MILPNet approach: use simulation operating points to linearize H-W and pump
-    # curves, eliminating all binary SOS2 variables → pure LP, solves in seconds.
-    flowrate_df = sim_results.link["flowrate"]
-    pipe_flows_sim = {}
-    pump_flows_sim = {}
-    for pipe in wn.pipe_name_list:
-        if pipe in flowrate_df.columns:
-            pipe_flows_sim[pipe] = [float(flowrate_df[pipe].iloc[t]) for t in range(num_timesteps)]
-    for pump in wn.pump_name_list:
-        if pump in flowrate_df.columns:
-            pump_flows_sim[pump] = [float(flowrate_df[pump].iloc[t]) for t in range(num_timesteps)]
-
-    # --- Step 2: Build and solve the optimizer ---
-    data = {
-        "water": {
-            "inp_file": inp_file,
-            "config": {"T": num_timesteps},
-            "pipe_flows_sim": pipe_flows_sim,
-            "pump_flows_sim": pump_flows_sim,
-        }
-    }
-    config = {"run_water": True, "run_energy": False, "run_nexus": False, "T": num_timesteps}
-
-    model = build_model(data, config)
-
-    # Fix pump and valve status to match EPANET's initial schedule.
-    # Without this the solver turns all pumps off (Status=0), producing zero
-    # flow everywhere while EPANET runs them — causing 100% error.
-    for p in model.Pumps:
-        is_on = str(wn.get_link(p).initial_status).upper() not in ("CLOSED",)
-        for t in model.T:
-            model.Status[p, t].fix(1 if is_on else 0)
-    for v in model.Valves:
-        is_on = str(wn.get_link(v).initial_status).upper() not in ("CLOSED",)
-        for t in model.T:
-            model.Status[v, t].fix(1 if is_on else 0)
-
-    model.del_component(model.objective)
-    # Minimise demand-violation slack so the solver finds the physics-consistent solution
-    model.objective = pyo.Objective(
-        expr=sum(
-            model.SlackPos[n, t] + model.SlackNeg[n, t]
-            for n in model.Junctions for t in model.T
-        ),
-        sense=pyo.minimize,
-    )
-
-    model, results = solve_model(model, solver=solver, tee=False, timeout=120)
-    term = results.solver.termination_condition
-    logger.info(f"Solver termination: {term}")
-
-    # Accept optimal, feasible, or time-limit-with-incumbent.
-    # Gurobi loads the best incumbent into the model even on time limit (the Pyomo warning
-    # "containing a solution" confirms this). Infeasible/unbounded/error are rejected.
-    _acceptable = {
-        pyo.TerminationCondition.optimal,
-        pyo.TerminationCondition.feasible,
-        pyo.TerminationCondition.maxTimeLimit,
-    }
-    if term not in _acceptable:
-        return {"status": "infeasible", "termination": str(term)}
-
-    # --- Step 3: Extract and compare ---
+    config = {"run_water": True, "run_energy": False, "run_nexus": False,
+              "T": num_timesteps, "water": {"network": str(Path(inp_file).resolve())}}
+    data = load_networks(config)
+    model, result, _ = solve_model(build_model(data, config), solver=solver, timeout=120)
+    wn = wntr.network.WaterNetworkModel(data["water"]["inp_file"])
     opt_data = extract_water_opt_timeseries(model, wn)
-    sim_data = extract_water_sim_timeseries(wn, sim_results, num_timesteps)
+    with tempfile.TemporaryDirectory(prefix="econex-validation-") as scratch:
+        output = Path(save_dir or scratch)
+        replay = replay_water(model, data["water"]["inp_file"], config, output)
+        heads = pd.read_csv(output / "water_replay_heads.csv", index_col="time_seconds")
+        flows = pd.read_csv(output / "water_replay_flowrate.csv", index_col="time_seconds")
+        index = [t * 3600 for t in model.T]
+        sim_data = {"tank_heads": heads.loc[index, wn.tank_name_list],
+                    "junction_heads": heads.loc[index, wn.junction_name_list],
+                    "pump_flows": flows.loc[index, wn.pump_name_list],
+                    "pipe_flows": flows.loc[index, wn.pipe_name_list]}
     metrics = compute_comparison_metrics(opt_data, sim_data)
-
     if save_dir:
-        with open(save_dir / "comparison_metrics.json", "w") as f:
-            json.dump(metrics, f, indent=2)
-        plot_validation_results(opt_data, sim_data, save_dir)
-
-    return {
-        "status": "completed",
-        "metrics": metrics,
-        "opt_data": opt_data,
-        "sim_data": sim_data,
-        "timestep": wn.options.time.report_timestep,
-    }
+        Path(save_dir, "comparison_metrics.json").write_text(json.dumps(metrics, indent=2))
+        plot_validation_results(opt_data, sim_data, Path(save_dir))
+    return {"status": "completed", "termination": str(result.solver.termination_condition),
+            "metrics": metrics, "replay_metrics": replay, "opt_data": opt_data, "sim_data": sim_data,
+            "timestep": 3600}

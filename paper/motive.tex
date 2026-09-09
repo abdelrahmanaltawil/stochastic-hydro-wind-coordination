@@ -1,0 +1,25 @@
+\documentclass{beamer}
+\usetheme{Madrid}
+\usepackage[T1]{fontenc}
+\title{Deterministic Water--Energy Coordination}
+\author{Abdelrahman Y. A. Altawil}
+\date{}
+\begin{document}
+\begin{frame}{Research question and scope}
+\begin{itemize}
+\item How does jointly scheduling water pumps, photovoltaic generation, battery storage, and grid exchange affect daily procurement cost?
+\item A single operator coordinates hourly decisions with known demand, generation availability, and tariffs.
+\item The model respects approximate hydraulic and electrical-network constraints and replenishes initial water and battery reserves at the horizon end.
+\item The implemented study concerns water distribution and electricity consumption. Stochastic wind--hydropower scheduling and decentralized price coordination are future extensions.
+\end{itemize}
+\end{frame}
+\begin{frame}{Method and evidence}
+\begin{itemize}
+\item Formulate a mixed-integer linear program with piecewise hydraulic curves and linearized feeder constraints.
+\item Couple each pump's binary status to a calibrated fixed electrical load at its assigned bus.
+\item Compare flexible and fixed pumping under identical tariffs, assets, and terminal conditions.
+\item Report solver status, cost, schedules, service limits, and inventory residuals from reproducible experiments.
+\item Distinguish feasibility of the optimization approximation from nonlinear replay of optimized controls and from field validation.
+\end{itemize}
+\end{frame}
+\end{document}

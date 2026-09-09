@@ -1,0 +1,194 @@
+2026-05-20 22:03:34,008 [INFO] utils - Collecting run environment and versioning details...
+2026-05-20 22:03:34,008 [INFO] utils - Experiment ID: bd8e (started at 2026-05-20T22:03:34.008108)
+2026-05-20 22:03:34,008 [INFO] utils - Experiment results will be saved to: data/results/WATER -- 20260520_220334 -- bd8e
+
+
+2026-05-20 22:03:34,008 [INFO] workflow - Starting optimization of WATER for 24 hours
+2026-05-20 22:03:34,008 [INFO] preprocessing - Loaded water network: data/inputs/system_config/water/ANET.inp
+2026-05-20 22:03:34,009 [INFO] algorithm_tasks - Building water sub-model from data/inputs/system_config/water/ANET.inp
+2026-05-20 22:03:34,027 [INFO] algorithm_tasks - EPANET pre-simulation: per-pipe max flows computed for 12 pipes
+2026-05-20 22:03:34,102 [WARNING] block - Implicitly replacing the Component attribute Status (type=<class 'pyomo.core.base.var.IndexedVar'>) on block EcoNex_Optimization with a new Component (type=<class 'pyomo.core.base.var.IndexedVar'>).
+This is usually indicative of a modelling error.
+To avoid this warning, use block.del_component() and block.add_component().
+2026-05-20 22:03:34,104 [INFO] algorithm_tasks - Water sub-model: 11 nodes, 13 links, 1 pumps
+2026-05-20 22:03:34,105 [INFO] algorithm_tasks - Model assembled successfully
+2026-05-20 22:03:34,177 [INFO] GUROBI - Set parameter Username
+2026-05-20 22:03:34,177 [INFO] GUROBI - Set parameter LicenseID to value 2670459
+2026-05-20 22:03:34,177 [INFO] GUROBI - 
+2026-05-20 22:03:34,177 [INFO] GUROBI - --------------------------------------------
+2026-05-20 22:03:34,177 [INFO] GUROBI - Warning: your license will expire in 4 days
+2026-05-20 22:03:34,177 [INFO] GUROBI - --------------------------------------------
+2026-05-20 22:03:34,177 [INFO] GUROBI - 
+2026-05-20 22:03:34,178 [INFO] GUROBI - Academic license - for non-commercial use only - expires 2026-05-24
+2026-05-20 22:03:34,181 [INFO] algorithm_tasks - Solving with gurobi (timeout=300s)
+2026-05-20 22:03:34,289 [INFO] algorithm_tasks - GUROBI_RUN - Read LP format model from file /var/folders/3w/hd5h2k7x1vj43929dpnp39p40000gn/T/tmpgg48h651.pyomo.lp
+2026-05-20 22:03:34,289 [INFO] algorithm_tasks - GUROBI_RUN - Reading time = 0.01 seconds
+2026-05-20 22:03:34,289 [INFO] algorithm_tasks - GUROBI_RUN - x1: 3718 rows, 4032 columns, 12184 nonzeros
+2026-05-20 22:03:34,290 [INFO] algorithm_tasks - GUROBI_RUN - Set parameter TimeLimit to value 300
+2026-05-20 22:03:34,290 [INFO] algorithm_tasks - GUROBI_RUN - Set parameter LogToConsole to value 1
+2026-05-20 22:03:34,290 [INFO] algorithm_tasks - GUROBI_RUN - Set parameter LogFile to value "data/results/WATER -- 20260520_220334 -- bd8e/metadata/00_solver.log"
+2026-05-20 22:03:34,290 [INFO] algorithm_tasks - GUROBI_RUN - Gurobi Optimizer version 12.0.3 build v12.0.3rc0 (mac64[arm] - Darwin 25.1.0 25B78)
+2026-05-20 22:03:34,291 [INFO] algorithm_tasks - GUROBI_RUN - 
+2026-05-20 22:03:34,291 [INFO] algorithm_tasks - GUROBI_RUN - CPU model: Apple M1 Max
+2026-05-20 22:03:34,291 [INFO] algorithm_tasks - GUROBI_RUN - Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+2026-05-20 22:03:34,291 [INFO] algorithm_tasks - GUROBI_RUN - 
+2026-05-20 22:03:34,291 [INFO] algorithm_tasks - GUROBI_RUN - Non-default parameters:
+2026-05-20 22:03:34,291 [INFO] algorithm_tasks - GUROBI_RUN - TimeLimit  300
+2026-05-20 22:03:34,291 [INFO] algorithm_tasks - GUROBI_RUN - 
+2026-05-20 22:03:34,291 [INFO] algorithm_tasks - GUROBI_RUN - Optimize a model with 3718 rows, 4032 columns and 12184 nonzeros
+2026-05-20 22:03:34,292 [INFO] algorithm_tasks - GUROBI_RUN - Model fingerprint: 0xb9178e4d
+2026-05-20 22:03:34,292 [INFO] algorithm_tasks - GUROBI_RUN - Variable types: 2928 continuous, 1104 integer (1104 binary)
+2026-05-20 22:03:34,292 [INFO] algorithm_tasks - GUROBI_RUN - Coefficient statistics:
+2026-05-20 22:03:34,292 [INFO] algorithm_tasks - GUROBI_RUN -   Matrix range     [3e-03, 1e+03]
+2026-05-20 22:03:34,292 [INFO] algorithm_tasks - GUROBI_RUN -   Objective range  [1e+01, 1e+09]
+2026-05-20 22:03:34,292 [INFO] algorithm_tasks - GUROBI_RUN -   Bounds range     [1e+00, 5e+02]
+2026-05-20 22:03:34,292 [INFO] algorithm_tasks - GUROBI_RUN -   RHS range        [3e-03, 1e+03]
+2026-05-20 22:03:34,313 [INFO] algorithm_tasks - GUROBI_RUN - Presolve removed 764 rows and 677 columns
+2026-05-20 22:03:34,313 [INFO] algorithm_tasks - GUROBI_RUN - Presolve time: 0.02s
+2026-05-20 22:03:34,314 [INFO] algorithm_tasks - GUROBI_RUN - Presolved: 2954 rows, 3355 columns, 9860 nonzeros
+2026-05-20 22:03:34,316 [INFO] algorithm_tasks - GUROBI_RUN - Variable types: 2553 continuous, 802 integer (802 binary)
+2026-05-20 22:03:34,323 [INFO] algorithm_tasks - GUROBI_RUN - Found heuristic solution: objective 6.348032e+09
+2026-05-20 22:03:34,328 [INFO] algorithm_tasks - GUROBI_RUN - Found heuristic solution: objective 6.074240e+09
+2026-05-20 22:03:34,360 [INFO] algorithm_tasks - GUROBI_RUN - 
+2026-05-20 22:03:34,361 [INFO] algorithm_tasks - GUROBI_RUN - Root relaxation: objective 9.873190e+00, 1661 iterations, 0.03 seconds (0.03 work units)
+2026-05-20 22:03:34,505 [INFO] algorithm_tasks - GUROBI_RUN - 
+2026-05-20 22:03:34,505 [INFO] algorithm_tasks - GUROBI_RUN -     Nodes    |    Current Node    |     Objective Bounds      |     Work
+2026-05-20 22:03:34,505 [INFO] algorithm_tasks - GUROBI_RUN -  Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+2026-05-20 22:03:34,505 [INFO] algorithm_tasks - GUROBI_RUN - 
+2026-05-20 22:03:34,505 [INFO] algorithm_tasks - GUROBI_RUN -      0     0    9.87319    0   86 6.0742e+09    9.87319   100%     -    0s
+2026-05-20 22:03:34,547 [INFO] algorithm_tasks - GUROBI_RUN -      0     0   10.72937    0  126 6.0742e+09   10.72937   100%     -    0s
+2026-05-20 22:03:34,559 [INFO] algorithm_tasks - GUROBI_RUN -      0     0   10.72937    0  118 6.0742e+09   10.72937   100%     -    0s
+2026-05-20 22:03:34,585 [INFO] algorithm_tasks - GUROBI_RUN - H    0     0                    4.647372e+09   10.72937   100%     -    0s
+2026-05-20 22:03:34,586 [INFO] algorithm_tasks - GUROBI_RUN - H    0     0                    4.604372e+09   10.72937   100%     -    0s
+2026-05-20 22:03:34,586 [INFO] algorithm_tasks - GUROBI_RUN - H    0     0                    4.603886e+09   10.72937   100%     -    0s
+2026-05-20 22:03:34,588 [INFO] algorithm_tasks - GUROBI_RUN -      0     0   10.72937    0  137 4.6039e+09   10.72937   100%     -    0s
+2026-05-20 22:03:34,609 [INFO] algorithm_tasks - GUROBI_RUN -      0     0   10.72937    0  129 4.6039e+09   10.72937   100%     -    0s
+2026-05-20 22:03:34,786 [INFO] algorithm_tasks - GUROBI_RUN -      0     0   10.72937    0   57 4.6039e+09   10.72937   100%     -    0s
+2026-05-20 22:03:34,792 [INFO] algorithm_tasks - GUROBI_RUN -      0     0   10.72937    0   66 4.6039e+09   10.72937   100%     -    0s
+2026-05-20 22:03:34,807 [INFO] algorithm_tasks - GUROBI_RUN - H    0     0                    4.603885e+09   10.72937   100%     -    0s
+2026-05-20 22:03:34,895 [INFO] algorithm_tasks - GUROBI_RUN - H    0     0                    4.592430e+09   10.72937   100%     -    0s
+2026-05-20 22:03:34,895 [INFO] algorithm_tasks - GUROBI_RUN - H    0     0                    4.592430e+09   10.72937   100%     -    0s
+2026-05-20 22:03:34,915 [INFO] algorithm_tasks - GUROBI_RUN -      0     0   10.72937    0   55 4.5924e+09   10.72937   100%     -    0s
+2026-05-20 22:03:34,930 [INFO] algorithm_tasks - GUROBI_RUN -      0     0   10.72937    0   67 4.5924e+09   10.72937   100%     -    0s
+2026-05-20 22:03:35,013 [INFO] algorithm_tasks - GUROBI_RUN -      0     0   10.72937    0   54 4.5924e+09   10.72937   100%     -    0s
+2026-05-20 22:03:35,055 [INFO] algorithm_tasks - GUROBI_RUN -      0     0   10.72937    0   48 4.5924e+09   10.72937   100%     -    0s
+2026-05-20 22:03:35,122 [INFO] algorithm_tasks - GUROBI_RUN -      0     2   10.72937    0   45 4.5924e+09   10.72937   100%     -    0s
+2026-05-20 22:03:35,202 [INFO] algorithm_tasks - GUROBI_RUN - H   29    44                    4.592430e+09   10.72937   100%   113    0s
+2026-05-20 22:03:35,202 [INFO] algorithm_tasks - GUROBI_RUN - H   35    44                    4.592429e+09   10.72937   100%   114    0s
+2026-05-20 22:03:35,202 [INFO] algorithm_tasks - GUROBI_RUN - H   42    44                    4.563852e+09   10.72937   100%   105    0s
+2026-05-20 22:03:35,307 [INFO] algorithm_tasks - GUROBI_RUN - H  147   142                    4.563851e+09   10.72937   100%  74.8    1s
+2026-05-20 22:03:35,307 [INFO] algorithm_tasks - GUROBI_RUN - H  150   142                    4.437424e+09   10.72937   100%  73.8    1s
+2026-05-20 22:03:35,386 [INFO] algorithm_tasks - GUROBI_RUN - H  207   171                    4.375322e+09   10.72937   100%  66.2    1s
+2026-05-20 22:03:35,387 [INFO] algorithm_tasks - GUROBI_RUN - H  208   171                    4.355395e+09   10.72937   100%  67.1    1s
+2026-05-20 22:03:35,387 [INFO] algorithm_tasks - GUROBI_RUN - H  211   171                    4.336386e+09   10.72937   100%  69.6    1s
+2026-05-20 22:03:35,387 [INFO] algorithm_tasks - GUROBI_RUN - H  214   171                    4.231095e+09   10.72937   100%  69.5    1s
+2026-05-20 22:03:35,538 [INFO] algorithm_tasks - GUROBI_RUN - H  345   256                    3.908647e+09   10.72937   100%  65.7    1s
+2026-05-20 22:03:35,866 [INFO] algorithm_tasks - GUROBI_RUN - H  542   425                    3.894953e+09   10.72937   100%  61.2    1s
+2026-05-20 22:03:35,866 [INFO] algorithm_tasks - GUROBI_RUN - H  548   425                    3.890820e+09   10.72937   100%  61.4    1s
+2026-05-20 22:03:35,926 [INFO] algorithm_tasks - GUROBI_RUN - H  598   498                    3.812246e+09   10.72937   100%  59.1    1s
+2026-05-20 22:03:35,927 [INFO] algorithm_tasks - GUROBI_RUN - H  625   498                    3.653752e+09   10.72937   100%  58.1    1s
+2026-05-20 22:03:36,002 [INFO] algorithm_tasks - GUROBI_RUN - H  694   565                    3.628815e+09   10.72937   100%  56.2    1s
+2026-05-20 22:03:36,002 [INFO] algorithm_tasks - GUROBI_RUN - H  695   565                    3.472732e+09   10.72937   100%  56.2    1s
+2026-05-20 22:03:37,217 [INFO] algorithm_tasks - GUROBI_RUN - H 1718  1438                    1.822084e+09   10.72937   100%  33.4    2s
+2026-05-20 22:03:37,244 [INFO] algorithm_tasks - GUROBI_RUN - H 1718  1366                    1.821702e+09   10.72937   100%  33.4    2s
+2026-05-20 22:03:37,244 [INFO] algorithm_tasks - GUROBI_RUN - H 1718  1297                    1.821702e+09   10.72937   100%  33.4    2s
+2026-05-20 22:03:37,413 [INFO] algorithm_tasks - GUROBI_RUN - H 1719  1233                    1.383953e+09   10.72937   100%  33.4    3s
+2026-05-20 22:03:38,109 [INFO] algorithm_tasks - GUROBI_RUN - H 1723  1173                    1.348937e+09   10.73179   100%  33.3    3s
+2026-05-20 22:03:38,298 [INFO] algorithm_tasks - GUROBI_RUN - H 1725  1117                    1.305746e+09   10.73179   100%  33.3    4s
+2026-05-20 22:03:38,298 [INFO] algorithm_tasks - GUROBI_RUN - H 1725  1061                    1.303586e+09   10.73179   100%  33.3    4s
+2026-05-20 22:03:38,299 [INFO] algorithm_tasks - GUROBI_RUN - H 1725  1007                    1.288473e+09   10.73179   100%  33.3    4s
+2026-05-20 22:03:38,413 [INFO] algorithm_tasks - GUROBI_RUN - H 1726   957                    1.257585e+09   10.73179   100%  33.3    4s
+2026-05-20 22:03:38,443 [INFO] algorithm_tasks - GUROBI_RUN - H 1726   909                    9.302820e+08   10.73179   100%  33.3    4s
+2026-05-20 22:03:38,838 [INFO] algorithm_tasks - GUROBI_RUN - H 1730   866                    4.179155e+08   10.85291   100%  33.2    4s
+2026-05-20 22:03:38,838 [INFO] algorithm_tasks - GUROBI_RUN - H 1730   822                    4.022743e+08   10.85291   100%  33.2    4s
+2026-05-20 22:03:38,864 [INFO] algorithm_tasks - GUROBI_RUN - H 1730   781                    3.989886e+08   10.85291   100%  33.2    4s
+2026-05-20 22:03:38,973 [INFO] algorithm_tasks - GUROBI_RUN - H 1731   742                    3.989874e+08   10.85291   100%  33.2    4s
+2026-05-20 22:03:39,112 [INFO] algorithm_tasks - GUROBI_RUN - H 1734   707                    3.807843e+08   11.28458   100%  33.1    4s
+2026-05-20 22:03:39,620 [INFO] algorithm_tasks - GUROBI_RUN -   1737   709 1.5878e+08  100   60 3.8078e+08   11.28458   100%  33.1    5s
+2026-05-20 22:03:40,271 [INFO] algorithm_tasks - GUROBI_RUN - H 1766   712                    3.776958e+08   11.28458   100%  48.2    5s
+2026-05-20 22:03:40,271 [INFO] algorithm_tasks - GUROBI_RUN - H 1770   677                    3.745823e+08   11.28458   100%  48.1    5s
+2026-05-20 22:03:40,272 [INFO] algorithm_tasks - GUROBI_RUN - H 1783   640                    3.707897e+08   11.28458   100%  48.3    5s
+2026-05-20 22:03:40,408 [INFO] algorithm_tasks - GUROBI_RUN - H 1817   641                    3.666221e+08   11.28458   100%  48.1    6s
+2026-05-20 22:03:40,409 [INFO] algorithm_tasks - GUROBI_RUN - H 1818   612                    3.645585e+08   11.28458   100%  48.1    6s
+2026-05-20 22:03:41,116 [INFO] algorithm_tasks - GUROBI_RUN - H 1922   641                    3.571512e+08   11.28458   100%  48.1    6s
+2026-05-20 22:03:41,117 [INFO] algorithm_tasks - GUROBI_RUN - H 1925   614                    3.521748e+08   11.28458   100%  48.1    6s
+2026-05-20 22:03:41,117 [INFO] algorithm_tasks - GUROBI_RUN - H 1927   587                    2.666991e+08   11.28458   100%  48.1    6s
+2026-05-20 22:03:41,355 [INFO] algorithm_tasks - GUROBI_RUN - H 1998   606                    2.642190e+08   11.28458   100%  49.2    7s
+2026-05-20 22:03:41,355 [INFO] algorithm_tasks - GUROBI_RUN - H 2000   582                    2.577366e+08   11.28458   100%  49.2    7s
+2026-05-20 22:03:41,558 [INFO] algorithm_tasks - GUROBI_RUN - H 2075   613                    2.320676e+08   11.28458   100%  49.1    7s
+2026-05-20 22:03:41,559 [INFO] algorithm_tasks - GUROBI_RUN - H 2076   592                    2.265137e+08   11.28458   100%  49.1    7s
+2026-05-20 22:03:41,559 [INFO] algorithm_tasks - GUROBI_RUN - H 2086   569                    2.182865e+08   11.28458   100%  49.0    7s
+2026-05-20 22:03:41,559 [INFO] algorithm_tasks - GUROBI_RUN - H 2089   549                    2.125450e+08   11.28458   100%  49.0    7s
+2026-05-20 22:03:41,621 [INFO] algorithm_tasks - GUROBI_RUN - H 2099   550                    2.019980e+08   11.28458   100%  48.8    7s
+2026-05-20 22:03:41,622 [INFO] algorithm_tasks - GUROBI_RUN - H 2118   527                    1.884929e+08   11.28458   100%  48.9    7s
+2026-05-20 22:03:41,747 [INFO] algorithm_tasks - GUROBI_RUN - H 2170   549                    1.868666e+08   11.28458   100%  48.7    7s
+2026-05-20 22:03:41,748 [INFO] algorithm_tasks - GUROBI_RUN - H 2174   533                    1.768073e+08   11.28458   100%  48.6    7s
+2026-05-20 22:03:41,883 [INFO] algorithm_tasks - GUROBI_RUN - H 2237   555                    1.759745e+08   11.28458   100%  48.5    7s
+2026-05-20 22:03:41,960 [INFO] algorithm_tasks - GUROBI_RUN - H 2248   576                    1.724601e+08   11.28458   100%  48.7    7s
+2026-05-20 22:03:41,963 [INFO] algorithm_tasks - GUROBI_RUN - H 2262   559                    1.722588e+08   11.28458   100%  48.9    7s
+2026-05-20 22:03:41,964 [INFO] algorithm_tasks - GUROBI_RUN - H 2272   543                    1.697359e+08   11.28458   100%  48.7    7s
+2026-05-20 22:03:42,057 [INFO] algorithm_tasks - GUROBI_RUN - H 2306   528                    1.689425e+08   11.28458   100%  49.0    7s
+2026-05-20 22:03:42,366 [INFO] algorithm_tasks - GUROBI_RUN - H 2400   587                    1.613628e+08   11.28458   100%  48.7    8s
+2026-05-20 22:03:42,426 [INFO] algorithm_tasks - GUROBI_RUN - H 2419   630                    1.589495e+08   11.28458   100%  48.5    8s
+2026-05-20 22:03:42,427 [INFO] algorithm_tasks - GUROBI_RUN - H 2452   630                    1.562894e+08   11.28458   100%  48.1    8s
+2026-05-20 22:03:43,062 [INFO] algorithm_tasks - GUROBI_RUN - H 3194  1328                    1.562894e+08   11.28458   100%  42.8    8s
+2026-05-20 22:03:43,063 [INFO] algorithm_tasks - GUROBI_RUN - H 3195  1321                    1.498051e+08   11.28458   100%  42.8    8s
+2026-05-20 22:03:43,064 [INFO] algorithm_tasks - GUROBI_RUN - H 3196  1302                    1.209501e+08   11.28458   100%  42.8    8s
+2026-05-20 22:03:43,489 [INFO] algorithm_tasks - GUROBI_RUN - H 3436  1486                    1.206197e+08   11.28458   100%  41.5    9s
+2026-05-20 22:03:43,874 [INFO] algorithm_tasks - GUROBI_RUN - H 3921  1158                    5.472121e+07   11.28458   100%  39.5    9s
+2026-05-20 22:03:44,379 [INFO] algorithm_tasks - GUROBI_RUN -   4297  1348 8280261.06   34  107 5.4721e+07   11.28458   100%  39.6   10s
+2026-05-20 22:03:44,993 [INFO] algorithm_tasks - GUROBI_RUN - H 4682  1479                    5.192942e+07   11.28458   100%  39.9   10s
+2026-05-20 22:03:44,994 [INFO] algorithm_tasks - GUROBI_RUN - H 4686  1471                    5.097765e+07   11.28458   100%  40.0   10s
+2026-05-20 22:03:44,994 [INFO] algorithm_tasks - GUROBI_RUN - H 4690  1460                    4.993043e+07   11.28458   100%  40.2   10s
+2026-05-20 22:03:45,160 [INFO] algorithm_tasks - GUROBI_RUN - H 4692  1001                    3.232847e+07   11.28458   100%  40.2   10s
+2026-05-20 22:03:45,162 [INFO] algorithm_tasks - GUROBI_RUN - H 4699   975                    3.062790e+07   11.28458   100%  40.2   10s
+2026-05-20 22:03:46,303 [INFO] algorithm_tasks - GUROBI_RUN - H 5382   838                    1.671524e+07   11.28458   100%  42.7   12s
+2026-05-20 22:03:47,142 [INFO] algorithm_tasks - GUROBI_RUN - H 5938   978                    1.097092e+07   11.28458   100%  43.4   12s
+2026-05-20 22:03:48,094 [INFO] algorithm_tasks - GUROBI_RUN - H 6163   984                    8906766.2277   11.28458   100%  43.9   13s
+2026-05-20 22:03:48,094 [INFO] algorithm_tasks - GUROBI_RUN - H 6168   836                    6821899.1586   11.28458   100%  43.9   13s
+2026-05-20 22:03:48,095 [INFO] algorithm_tasks - GUROBI_RUN - H 6169   687                    247749.57649   11.28458   100%  43.9   13s
+2026-05-20 22:03:49,571 [INFO] algorithm_tasks - GUROBI_RUN -   6812   968   12.08258   39   65 247749.576   11.28458   100%  45.2   15s
+2026-05-20 22:03:50,141 [INFO] algorithm_tasks - GUROBI_RUN - H 7082  1010                    241113.90060   11.28458   100%  46.5   15s
+2026-05-20 22:03:51,033 [INFO] algorithm_tasks - GUROBI_RUN - H 7287   662                      11.8794685   11.28458  5.01%  48.9   16s
+2026-05-20 22:03:53,977 [INFO] algorithm_tasks - GUROBI_RUN - * 9083   590              69      11.8240198   11.28458  4.56%  52.9   19s
+2026-05-20 22:03:53,997 [INFO] algorithm_tasks - GUROBI_RUN - * 9339   494              71      11.7468495   11.28458  3.94%  52.9   19s
+2026-05-20 22:03:54,455 [INFO] algorithm_tasks - GUROBI_RUN -   9427   341 infeasible   48        11.74685   11.32430  3.60%  52.7   20s
+2026-05-20 22:03:55,383 [INFO] algorithm_tasks - GUROBI_RUN - *10437   194              46      11.6885194   11.56218  1.08%  53.0   21s
+2026-05-20 22:03:55,390 [INFO] algorithm_tasks - GUROBI_RUN - *10580   194              65      11.6590683   11.56218  0.83%  52.7   21s
+2026-05-20 22:03:55,400 [INFO] algorithm_tasks - GUROBI_RUN - 
+2026-05-20 22:03:55,400 [INFO] algorithm_tasks - GUROBI_RUN - Cutting planes:
+2026-05-20 22:03:55,400 [INFO] algorithm_tasks - GUROBI_RUN -   Learned: 1
+2026-05-20 22:03:55,400 [INFO] algorithm_tasks - GUROBI_RUN -   Gomory: 171
+2026-05-20 22:03:55,400 [INFO] algorithm_tasks - GUROBI_RUN -   Cover: 86
+2026-05-20 22:03:55,400 [INFO] algorithm_tasks - GUROBI_RUN -   Implied bound: 18
+2026-05-20 22:03:55,400 [INFO] algorithm_tasks - GUROBI_RUN -   Projected implied bound: 30
+2026-05-20 22:03:55,400 [INFO] algorithm_tasks - GUROBI_RUN -   MIR: 465
+2026-05-20 22:03:55,400 [INFO] algorithm_tasks - GUROBI_RUN -   Mixing: 16
+2026-05-20 22:03:55,400 [INFO] algorithm_tasks - GUROBI_RUN -   StrongCG: 6
+2026-05-20 22:03:55,400 [INFO] algorithm_tasks - GUROBI_RUN -   Flow cover: 1039
+2026-05-20 22:03:55,400 [INFO] algorithm_tasks - GUROBI_RUN -   GUB cover: 1
+2026-05-20 22:03:55,401 [INFO] algorithm_tasks - GUROBI_RUN -   Inf proof: 30
+2026-05-20 22:03:55,401 [INFO] algorithm_tasks - GUROBI_RUN -   RLT: 10
+2026-05-20 22:03:55,401 [INFO] algorithm_tasks - GUROBI_RUN -   Relax-and-lift: 23
+2026-05-20 22:03:55,401 [INFO] algorithm_tasks - GUROBI_RUN -   PSD: 1
+2026-05-20 22:03:55,401 [INFO] algorithm_tasks - GUROBI_RUN - 
+2026-05-20 22:03:55,401 [INFO] algorithm_tasks - GUROBI_RUN - Explored 10712 nodes (574302 simplex iterations) in 21.11 seconds (16.56 work units)
+2026-05-20 22:03:55,402 [INFO] algorithm_tasks - GUROBI_RUN - Thread count was 10 (of 10 available processors)
+2026-05-20 22:03:55,402 [INFO] algorithm_tasks - GUROBI_RUN - 
+2026-05-20 22:03:55,402 [INFO] algorithm_tasks - GUROBI_RUN - Solution count 10: 11.6591 11.6885 11.7468 ... 1.67152e+07
+2026-05-20 22:03:55,402 [INFO] algorithm_tasks - GUROBI_RUN - 
+2026-05-20 22:03:55,402 [INFO] algorithm_tasks - GUROBI_RUN - Optimal solution found (tolerance 1.00e-04)
+2026-05-20 22:03:55,402 [INFO] algorithm_tasks - GUROBI_RUN - Best objective 1.165906829472e+01, best bound 1.165906829472e+01, gap 0.0000%
+2026-05-20 22:03:55,428 [INFO] algorithm_tasks - Solver finished: ok / optimal
+2026-05-20 22:03:55,430 [INFO] postprocessing - Extracting solution...
+2026-05-20 22:03:55,430 [INFO] postprocessing - Writing solution summary...
+2026-05-20 22:03:55,447 [INFO] postprocessing - Saved 00_flows.csv to water_data
+2026-05-20 22:03:55,448 [INFO] postprocessing - Saved 00_heads.csv to water_data
+2026-05-20 22:03:55,448 [INFO] postprocessing - Saved 00_pump_status.csv to water_data
+2026-05-20 22:03:55,449 [INFO] postprocessing - Saved 00_slack.csv to water_data
+2026-05-20 22:03:55,449 [INFO] postprocessing - Saved 00_summary.json to .
+2026-05-20 22:03:55,510 [INFO] postprocessing - Saved 00_run_metadata.yaml to metadata
+2026-05-20 22:03:55,512 [INFO] postprocessing - Saved 00_experiment_parameters.yaml to metadata
+2026-05-20 22:03:55,514 [INFO] postprocessing - Saved water network file - ANET.inp - to metadata/inputs/water/ANET.inp
+2026-05-20 22:03:55,514 [INFO] postprocessing - Saved 00_run.log and 00_solver.log to metadata
+2026-05-20 22:03:55,514 [INFO] workflow - Pipeline completed successfully. Elapsed time: 0.36 min. Results in: data/results/WATER -- 20260520_220334 -- bd8e

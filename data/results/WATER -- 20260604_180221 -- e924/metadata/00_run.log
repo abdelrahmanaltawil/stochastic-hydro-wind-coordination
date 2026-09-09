@@ -1,0 +1,32 @@
+2026-06-04 18:02:21,484 [INFO] utils - Collecting run environment and versioning details...
+2026-06-04 18:02:21,484 [INFO] utils - Experiment ID: e924 (started at 2026-06-04T18:02:21.484501)
+2026-06-04 18:02:21,484 [INFO] utils - Experiment results will be saved to: data/results/WATER -- 20260604_180221 -- e924
+
+
+2026-06-04 18:02:21,484 [INFO] workflow - Starting optimization of WATER for 24 hours
+2026-06-04 18:02:21,484 [INFO] preprocessing - Loaded water network: data/inputs/system_config/water/ANET.inp
+2026-06-04 18:02:21,542 [INFO] preprocessing - EPANET pre-simulation: 13 links over 24 h (headloss available)
+2026-06-04 18:02:21,542 [INFO] algorithm_tasks - Building water sub-model from data/inputs/system_config/water/ANET.inp
+2026-06-04 18:02:21,545 [INFO] algorithm_tasks - Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+2026-06-04 18:02:21,628 [INFO] algorithm_tasks - Water sub-model: 11 nodes, 13 links, 1 pumps
+2026-06-04 18:02:21,628 [INFO] algorithm_tasks - Model assembled successfully
+2026-06-04 18:02:22,038 [INFO] GUROBI - Set parameter Username
+2026-06-04 18:02:22,038 [INFO] GUROBI - Set parameter LicenseID to value 2670459
+2026-06-04 18:02:22,051 [INFO] algorithm_tasks - Solving with gurobi (timeout=300s)
+2026-06-04 18:02:22,120 [INFO] algorithm_tasks - GUROBI_RUN - Set parameter Username
+2026-06-04 18:02:22,120 [INFO] algorithm_tasks - GUROBI_RUN - Set parameter LicenseID to value 2670459
+2026-06-04 18:02:22,133 [ERROR] algorithm_tasks - Unexpected error during solving: License expired 2026-05-24
+Traceback (most recent call last):
+  File "/Users/abdelrahmanaltawil/Developer/GitHub/publications-implementation/A stochastic model for the daily coordination of pumped storage hydro plants and wind power plants/src/algorithm_tasks.py", line 180, in solve_model
+    results = opt.solve(model, tee=False)
+  File "/Users/abdelrahmanaltawil/miniforge3/envs/py310_env/lib/python3.10/site-packages/pyomo/opt/base/solvers.py", line 636, in solve
+    _status = self._apply_solver()
+  File "/Users/abdelrahmanaltawil/miniforge3/envs/py310_env/lib/python3.10/site-packages/pyomo/solvers/plugins/solvers/GUROBI.py", line 709, in _apply_solver
+    self._soln = GUROBI_RUN.gurobi_run(
+  File "/Users/abdelrahmanaltawil/miniforge3/envs/py310_env/lib/python3.10/site-packages/pyomo/solvers/plugins/solvers/GUROBI_RUN.py", line 66, in gurobi_run
+    model = read(model_file)
+  File "src/gurobipy/gurobi.pxi", line 336, in gurobipy._core.read
+  File "src/gurobipy/gurobi.pxi", line 116, in gurobipy._core.gurobi.read
+  File "src/gurobipy/gurobi.pxi", line 60, in gurobipy._core.gurobi._getdefaultenv
+  File "src/gurobipy/env.pxi", line 108, in gurobipy._core.Env.__init__
+gurobipy._exception.GurobiError: License expired 2026-05-24

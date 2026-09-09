@@ -1,0 +1,22 @@
+{
+  "run_id": "WATER-ENERGY-NEXUS -- 20260906_233544 -- 11fe",
+  "solver_status": "aborted",
+  "termination_condition": "maxTimeLimit",
+  "objective_value": 2941.1791984695637,
+  "solver_time_s": null,
+  "num_variables": 3219,
+  "num_constraints": 2598,
+  "horizon_hours": 24.0,
+  "water_cost": 0.0,
+  "energy_cost": 2941.1791984695637,
+  "water_slack_violations": 0,
+  "water_slack_volume_m3": 0.0,
+  "pump_on_hours": 9.0,
+  "grid_import_kwh": 16954.054514837517,
+  "grid_export_kwh": 0.0,
+  "pv_generation_kwh": 700.0,
+  "battery_charge_kwh": 210.5263157894737,
+  "battery_discharge_kwh": 190.0,
+  "pump_energy_kwh": 233.52819904804232,
+  "max_constraint_violation": 1.133537352870917e-08
+}

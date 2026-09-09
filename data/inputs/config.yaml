@@ -3,9 +3,9 @@
 # Set water/energy/nexus flags to compose the pipeline.
 
 # ── Sub-model flags ────────────────────────────────────────────────────────────
-run_water:  true    # Build water MILP (W1–W24)
-run_energy: false   # Build energy MILP (E1–E13)  — set true once energy data is ready
-run_nexus:  false   # Couple water + energy into one MILP — requires both flags above
+run_water:  true   # Hydraulic scheduling
+run_energy: true   # Electrical scheduling
+run_nexus:  true   # Couple both networks; automatically enables both components
 
 # ── Time horizon ───────────────────────────────────────────────────────────────
 T: 24           # Number of hourly time steps
@@ -16,12 +16,15 @@ paths:
 
 # ── Water network ──────────────────────────────────────────────────────────────
 water:
-  network: ./data/inputs/system_config/water/ANET.inp
+  network: ./data/inputs/system_config/water/SNET.inp   # simple nexus-illustration net (1 pump); ANET.inp = EPANET Net1
+  min_pressure_m: 20.0
+  terminal_tank_closure: true
+  n_pipe_segments: 12
 
 # ── Energy network ─────────────────────────────────────────────────────────────
 energy:
   network:           ./data/inputs/system_config/energy/master.dss
-  nominal_voltage:   11.0    # kV (line-to-line)
+  # Voltage base is read from the DSS circuit (115 kV in master.dss).
   base_power:        1000.0  # kVA
   voltage_tolerance: 0.10    # ±10 % per-unit (E9)
   n_current_segments: 5      # PWL segments for |I|² (E12)
@@ -43,9 +46,18 @@ energy:
     grid_import_tariff: []   # 24 hourly values [$/kWh] — leave empty for flat 0.10
     grid_export_tariff: 0.0
 
+# ── Nexus coupling (water ⇄ energy) ────────────────────────────────────────────
+# First link: pump electrical consumption. Each pump's mean hydraulic power
+# (ρg·Q·ΔH from a WNTR pre-simulation, Thomas & Sela / MILPNet convention) is
+# drawn as a fixed load when the pump is ON, injected at its assigned bus (E1/E7).
+nexus:
+  pump_efficiency: 1.0   # η wire-to-water; 1.0 matches MILPNet, ~0.75 for realistic draw
+  pump_bus:              # {pump_name: bus_name}; unmapped pumps → reference bus (first bus)
+    PU1: loadbus         # SNET's pump draws at the LoadBus of master.dss
+
 # ── Solver ─────────────────────────────────────────────────────────────────────
 solver:
-  name:    gurobi   # glpk | gurobi | cbc | cplex
+  name:    gurobi   # highs | glpk | gurobi | cbc | cplex
   timeout: 300      # seconds
   verbose: true
 

@@ -1,0 +1,59 @@
+% This file was created with tikzplotlib v0.10.1.
+\begin{tikzpicture}
+
+\definecolor{darkgray176}{RGB}{176,176,176}
+\definecolor{darkorange25512714}{RGB}{255,127,14}
+\definecolor{forestgreen4416044}{RGB}{44,160,44}
+\definecolor{lightgray204}{RGB}{204,204,204}
+\definecolor{steelblue31119180}{RGB}{31,119,180}
+
+\begin{axis}[
+legend cell align={left},
+legend style={fill opacity=0.8, draw opacity=1, text opacity=1, draw=lightgray204},
+tick align=outside,
+tick pos=left,
+title={Pumping Schedule Comparison},
+x grid style={darkgray176},
+xlabel={Hour},
+xmajorgrids,
+xmin=0.75, xmax=6.25,
+xtick style={color=black},
+y grid style={darkgray176},
+ylabel={Pump Vol ($m^3$)},
+ymajorgrids,
+ymin=-0.25, ymax=5.25,
+ytick style={color=black}
+]
+\addplot [semithick, steelblue31119180, mark=*, mark size=3, mark options={solid}]
+table {%
+1 3.33333333333333
+2 3.33333333333333
+3 3.33333333333333
+4 0
+5 0
+6 2
+};
+\addlegendentry{Centralized}
+\addplot [semithick, darkorange25512714, mark=square*, mark size=3, mark options={solid}]
+table {%
+1 3
+2 5
+3 2
+4 0
+5 0
+6 2
+};
+\addlegendentry{Decentralized Uncoordinated}
+\addplot [semithick, forestgreen4416044, dash pattern=on 5.55pt off 2.4pt, mark=triangle*, mark size=3, mark options={solid}]
+table {%
+1 3.33333333333333
+2 3.33333333333333
+3 3.33333333333333
+4 0
+5 0
+6 2
+};
+\addlegendentry{Decentralized Coordinated}
+\end{axis}
+
+\end{tikzpicture}

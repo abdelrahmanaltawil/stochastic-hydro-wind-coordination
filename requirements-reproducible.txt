@@ -1,0 +1,12 @@
+# Versions used for the paper run; Python 3.12.10 on macOS arm64.
+# Gurobi is optional and requires a separate installation/license.
+numpy==2.4.0
+pandas==2.3.0
+scipy==1.15.2
+pyomo==6.9.4
+highspy==1.11.0
+wntr==1.4.0
+OpenDSSDirect.py==0.9.4
+PyYAML==6.0.2
+matplotlib==3.10.8
+pytest==9.0.2

@@ -1,0 +1,40 @@
+2026-06-05 11:08:29,219 [INFO] utils - Collecting run environment and versioning details...
+2026-06-05 11:08:29,219 [INFO] utils - Experiment ID: 45b9 (started at 2026-06-05T11:08:29.219471)
+2026-06-05 11:08:29,219 [INFO] utils - Experiment results will be saved to: data/results/WATER-ENERGY-NEXUS -- 20260605_110829 -- 45b9
+
+
+2026-06-05 11:08:29,219 [INFO] workflow - Starting optimization of WATER-ENERGY-NEXUS for 24 hours
+2026-06-05 11:08:29,219 [INFO] preprocessing - Loaded water network: /Users/abdelrahmanaltawil/Developer/GitHub/publications-implementation/A stochastic model for the daily coordination of pumped storage hydro plants and wind power plants/data/inputs/system_config/water/SNET.inp
+2026-06-05 11:08:29,232 [INFO] preprocessing - EPANET pre-simulation: 3 links over 24 h (headloss available)
+2026-06-05 11:08:29,233 [INFO] preprocessing - Loaded energy network: /Users/abdelrahmanaltawil/Developer/GitHub/publications-implementation/A stochastic model for the daily coordination of pumped storage hydro plants and wind power plants/data/inputs/system_config/energy/master.dss
+2026-06-05 11:08:29,233 [INFO] algorithm_tasks - Building water sub-model from /Users/abdelrahmanaltawil/Developer/GitHub/publications-implementation/A stochastic model for the daily coordination of pumped storage hydro plants and wind power plants/data/inputs/system_config/water/SNET.inp
+2026-06-05 11:08:29,234 [INFO] algorithm_tasks - Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+2026-06-05 11:08:29,258 [INFO] algorithm_tasks - Water sub-model: 4 nodes, 3 links, 1 pumps
+2026-06-05 11:08:29,258 [INFO] algorithm_tasks - Building energy sub-model (E1–E13)
+2026-06-05 11:08:29,263 [INFO] algorithm_tasks - Energy sub-model: 2 buses, 0 lines
+2026-06-05 11:08:29,263 [INFO] algorithm_tasks - Nexus: reusing shared EPANET pre-simulation for pump power
+2026-06-05 11:08:29,263 [INFO] algorithm_tasks - Nexus coupling active: 1 pumps, total mean pump load 19.46 kW (η=1.0); pump electricity now priced through the energy import tariff.
+2026-06-05 11:08:29,264 [INFO] algorithm_tasks - Model assembled successfully
+2026-06-05 11:08:29,323 [INFO] GUROBI - Set parameter Username
+2026-06-05 11:08:29,323 [INFO] GUROBI - Set parameter LicenseID to value 2831429
+2026-06-05 11:08:29,324 [INFO] GUROBI - Academic license - for non-commercial use only - expires 2027-06-05
+2026-06-05 11:08:29,324 [INFO] algorithm_tasks - Solving with gurobi (timeout=300s)
+2026-06-05 11:08:29,357 [INFO] algorithm_tasks - GUROBI_RUN - Read LP format model from file /var/folders/3w/hd5h2k7x1vj43929dpnp39p40000gn/T/tmp0n2tv80g.pyomo.lp
+2026-06-05 11:08:29,357 [INFO] algorithm_tasks - GUROBI_RUN - Reading time = 0.00 seconds
+2026-06-05 11:08:29,357 [INFO] algorithm_tasks - GUROBI_RUN - x1: 1776 rows, 1656 columns, 5078 nonzeros
+2026-06-05 11:08:29,357 [INFO] algorithm_tasks - GUROBI_RUN - Set parameter TimeLimit to value 300
+2026-06-05 11:08:29,357 [INFO] algorithm_tasks - GUROBI_RUN - Set parameter LogToConsole to value 1
+2026-06-05 11:08:29,357 [ERROR] algorithm_tasks - Unexpected error during solving: Unable to write file
+Traceback (most recent call last):
+  File "/Users/abdelrahmanaltawil/Developer/GitHub/publications-implementation/A stochastic model for the daily coordination of pumped storage hydro plants and wind power plants/src/algorithm_tasks.py", line 180, in solve_model
+    results = opt.solve(model, tee=False)
+  File "/Users/abdelrahmanaltawil/miniforge3/envs/py310_env/lib/python3.10/site-packages/pyomo/opt/base/solvers.py", line 636, in solve
+    _status = self._apply_solver()
+  File "/Users/abdelrahmanaltawil/miniforge3/envs/py310_env/lib/python3.10/site-packages/pyomo/solvers/plugins/solvers/GUROBI.py", line 709, in _apply_solver
+    self._soln = GUROBI_RUN.gurobi_run(
+  File "/Users/abdelrahmanaltawil/miniforge3/envs/py310_env/lib/python3.10/site-packages/pyomo/solvers/plugins/solvers/GUROBI_RUN.py", line 101, in gurobi_run
+    model.setParam(key, value)
+  File "src/gurobipy/_model.pyx", line 2004, in gurobipy._model.Model.setParam
+  File "src/gurobipy/env.pxi", line 404, in gurobipy._core.Env.setParam
+  File "src/gurobipy/env.pxi", line 305, in gurobipy._core.Env.__setone
+gurobipy._exception.GurobiError: Unable to write file

@@ -7,12 +7,15 @@ Not a standalone workflow — call these functions from tests or workflow.py.
 
 import json
 import logging
+import math
+import os
 from datetime import datetime
 from pathlib import Path
 
 import opendssdirect as dss
 import pandas as pd
 
+logger = logging.getLogger(__name__)
 
 
 def load_energy_network(dss_file: str) -> None:
@@ -27,18 +30,31 @@ def load_energy_network(dss_file: str) -> None:
     if not dss_file:
         raise ValueError("No dss_file specified.")
 
-    logger.info(f"Compiling OpenDSS circuit: {dss_file}")
-    dss.run_command(f"Compile [{dss_file}]")
+    path = Path(dss_file).expanduser().resolve()
+    if not path.is_file():
+        raise FileNotFoundError(f"OpenDSS network not found: {path}")
+    logger.info("Compiling OpenDSS circuit: %s", path)
+    cwd = os.getcwd()
+    previous_allow = dss.Basic.AllowChangeDir()
+    try:
+        dss.Basic.AllowChangeDir(False)
+        dss.Command(f"Compile [{path}]")
+        if not dss.Basic.NumCircuits():
+            raise ValueError(f"OpenDSS file did not define a circuit: {path}")
+    finally:
+        dss.Basic.AllowChangeDir(previous_allow)
+        os.chdir(cwd)
     logger.debug(f"Circuit loaded: {dss.Circuit.Name()}")
 
 
-def run_energy_simulation(dss_file: str, mode: str = "daily") -> dict:
+def run_energy_simulation(dss_file: str, mode: str = "daily", num_steps: int = 24) -> dict:
     """Run a power-flow simulation for the compiled OpenDSS circuit.
 
     Args:
         dss_file:  Path to the OpenDSS master file.
-        mode:      'snap'  — single snapshot solve.
-                   'daily' — 24-step quasi-static solve (one step per hour).
+        mode:      'snap' for a snapshot, or 'daily' for hourly solves.
+        num_steps: Number of daily intervals (default 24). A daily solve samples
+                   DSS hours 1 through num_steps: profile point 1 is interval 0.
 
     Returns:
         Dict with keys:
@@ -48,28 +64,36 @@ def run_energy_simulation(dss_file: str, mode: str = "daily") -> dict:
             'link': {'current_amps': {branch: [24 values]},
                      'loading_pct':  {branch: [24 values]}}
     """
+    if isinstance(num_steps, bool) or not isinstance(num_steps, int) or num_steps < 1:
+        raise ValueError("num_steps must be a positive integer")
+    if mode not in ("snap", "daily"):
+        raise ValueError(f"Unknown simulation mode: {mode!r}. Use 'snap' or 'daily'.")
     load_energy_network(dss_file)
-
     if mode == "snap":
+        dss.Solution.Mode(0)
         steps = [None]
     elif mode == "daily":
         dss.Solution.Mode(2)        # Daily mode
         dss.Solution.Number(1)      # one step at a time
         dss.Solution.StepSize(3600) # 1-hour steps
-        steps = list(range(24))
-    else:
-        raise ValueError(f"Unknown simulation mode: {mode!r}. Use 'snap' or 'daily'.")
+        dss.Solution.Hour(0)
+        dss.Solution.Seconds(0)
+        steps = list(range(num_steps))
 
     node_voltage: dict[str, list] = {}
     node_P: dict[str, list] = {}
     node_Q: dict[str, list] = {}
     link_current: dict[str, list] = {}
     link_loading: dict[str, list] = {}
+    losses_kw = []
 
     logger.info(f"Running energy simulation (mode={mode}, steps={len(steps)})")
 
     for step in steps:
         dss.Solution.Solve()
+        if not dss.Solution.Converged():
+            raise RuntimeError(f"OpenDSS power flow did not converge at interval {step}")
+        losses_kw.append(float(dss.Circuit.Losses()[0] / 1000))
 
         # Bus voltages (per-unit, average of all phases)
         for bus in dss.Circuit.AllBusNames():
@@ -78,30 +102,46 @@ def run_energy_simulation(dss_file: str, mode: str = "daily") -> dict:
             avg_pu = float(sum(pu_mags) / len(pu_mags)) if pu_mags else 0.0
             node_voltage.setdefault(bus, []).append(avg_pu)
 
-        # Bus power injections (kW, kVAR) - simplified for opendssdirect
+        # Device injections: positive means supply to the network; loads are
+        # negative. Summing every branch terminal instead would return zero by
+        # Kirchhoff's law and conceal the load being validated.
         buses = dss.Circuit.AllBusNames()
-        for i, bus in enumerate(buses):
-            P = 0.0
-            Q = 0.0
+        injections = {bus: [0.0, 0.0] for bus in buses}
+        for element in dss.Circuit.AllElementNames():
+            if element.split(".", 1)[0].lower() not in {"load", "vsource", "generator", "storage", "pvsystem", "capacitor"}:
+                continue
+            dss.Circuit.SetActiveElement(element)
+            if not dss.CktElement.Enabled():
+                continue
+            bus = dss.CktElement.BusNames()[0].split(".")[0].lower()
+            count = dss.CktElement.NumConductors()
+            power = dss.CktElement.Powers()[:2 * count]
+            injections[bus][0] -= sum(power[0::2])
+            injections[bus][1] -= sum(power[1::2])
+        for bus, (P, Q) in injections.items():
             node_P.setdefault(bus, []).append(float(P))
             node_Q.setdefault(bus, []).append(float(Q))
 
         # Branch currents and loading
-        dss.Lines.First()
-        while True:
+        active = dss.Lines.First()
+        while active:
             name = dss.Lines.Name()
             currents = dss.CktElement.CurrentsMagAng()
-            I_mag = currents[0] if currents else 0.0  # first phase magnitude (amps)
-            norm_amps = dss.Lines.NormAmps() or 1.0
+            I_mag = max(currents[0::2], default=0.0)
+            norm_amps = dss.Lines.NormAmps()
+            if norm_amps <= 0:
+                raise ValueError(f"Line {name} has no positive normal ampacity")
             loading = float(I_mag / norm_amps * 100.0)
             link_current.setdefault(name, []).append(float(I_mag))
             link_loading.setdefault(name, []).append(loading)
-            if not dss.Lines.Next():
-                break
+            active = dss.Lines.Next()
 
     logger.info("Energy simulation completed")
 
     return {
+        "time_hours": list(range(len(steps))),
+        "losses_kw": losses_kw,
+        "simulation_type": "native_dss_baseline",
         "node": {
             "voltage_pu": node_voltage,
             "P_kw": node_P,
@@ -131,6 +171,8 @@ def create_energy_summary(
     """
     voltages = results["node"]["voltage_pu"]
     all_voltages = [v for series in voltages.values() for v in series]
+    if not all_voltages or any(not math.isfinite(v) for v in all_voltages):
+        raise ValueError("Simulation contains no finite bus voltage series")
 
     V_min, V_max = min(all_voltages), max(all_voltages)
     V_mean = sum(all_voltages) / len(all_voltages)
@@ -157,6 +199,7 @@ def create_energy_summary(
                 "max_pct": max_loading,
                 "num_overloaded": len(overloaded),
             },
+            "losses": {"total_kwh": sum(results.get("losses_kw", []))},
         },
     }
 
@@ -172,11 +215,11 @@ def save_energy_results(results: dict, summary: dict, run_dir: Path) -> None:
     energy_dir = run_dir / "energy"
     energy_dir.mkdir(parents=True, exist_ok=True)
 
-    pd.DataFrame(results["node"]["voltage_pu"]).to_csv(energy_dir / "voltage_pu.csv")
-    pd.DataFrame(results["node"]["P_kw"]).to_csv(energy_dir / "P_kw.csv")
-    pd.DataFrame(results["node"]["Q_kvar"]).to_csv(energy_dir / "Q_kvar.csv")
-    pd.DataFrame(results["link"]["current_amps"]).to_csv(energy_dir / "current_amps.csv")
-    pd.DataFrame(results["link"]["loading_pct"]).to_csv(energy_dir / "loading_pct.csv")
+    for group in ("node", "link"):
+        for name, series in results[group].items():
+            frame = pd.DataFrame(series, index=results.get("time_hours"))
+            frame.index.name = "time_hours"
+            frame.to_csv(energy_dir / f"{name}.csv")
 
     with open(energy_dir / "summary.json", "w") as f:
         json.dump(summary, f, indent=2, default=str)

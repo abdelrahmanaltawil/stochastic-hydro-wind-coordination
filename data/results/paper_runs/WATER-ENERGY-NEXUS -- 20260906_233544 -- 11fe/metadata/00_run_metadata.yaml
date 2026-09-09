@@ -1,0 +1,25 @@
+experiment_id: 11fe
+execution_start_time: '2026-09-06T23:35:44.926318'
+python_version: 3.12.10 | packaged by conda-forge | (main, Apr 10 2025, 22:19:24)
+  [Clang 18.1.8 ]
+platform: macOS-26.1-arm64-arm-64bit
+user: abdelrahmanaltawil
+hostname: Abdelrahmans-MacBook-Pro.local
+working_directory: /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination
+command: /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/src/workflow.py
+  --config data/inputs/paper_case.yaml
+execution_end_time: '2026-09-06T23:37:45.168663'
+execution_duration_min: 2.0040390833333332
+git_commit: bcd560e7955375c48c63026895a33f120c1f380b
+solver_log: /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/results/paper_runs/WATER-ENERGY-NEXUS
+  -- 20260906_233544 -- 11fe/metadata/00_solver.log
+git_worktree_dirty: true
+network_sources:
+  water:
+    original_path: /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/inputs/system_config/water/SNET.inp
+    saved_path: inputs/water/SNET.inp
+    sha256: 2ff5433b9b3b3ea0fdfca7b87d81527d176c3f43a2f20bf220d1d260062ddc45
+  energy:
+    original_path: /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/inputs/system_config/energy/master.dss
+    saved_path: inputs/energy/master.dss
+    sha256: 9b93511509af196e7ed90e88a50ea20a1c7803b58a8216440af92a88f0561297

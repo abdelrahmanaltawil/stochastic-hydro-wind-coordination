@@ -1,0 +1,10 @@
+2026-06-05 07:36:10,509 [INFO] utils - Collecting run environment and versioning details...
+2026-06-05 07:36:10,510 [INFO] utils - Experiment ID: 1103 (started at 2026-06-05T07:36:10.509869)
+2026-06-05 07:36:10,510 [INFO] utils - Experiment results will be saved to: data/results/WATER-ENERGY-NEXUS -- 20260605_073610 -- 1103
+
+
+2026-06-05 07:36:10,510 [INFO] workflow - Starting optimization of WATER-ENERGY-NEXUS for 24 hours
+2026-06-05 07:36:10,510 [INFO] preprocessing - Loaded water network: data/inputs/system_config/water/ANET.inp
+2026-06-05 07:36:10,524 [INFO] preprocessing - EPANET pre-simulation: 13 links over 24 h (headloss available)
+2026-06-05 07:36:10,525 [INFO] preprocessing - Loaded energy network: data/inputs/system_config/energy/master.dss
+2026-06-05 07:36:10,525 [INFO] algorithm_tasks - Building water sub-model from data/inputs/system_config/water/ANET.inp

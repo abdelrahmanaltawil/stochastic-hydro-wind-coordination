@@ -1,0 +1,20 @@
+{
+  "P_kw": {
+    "sourcebus": {
+      "n": 24,
+      "mae": 50.0,
+      "max_diff": 50.0,
+      "max_rel_err_pct": 0.0,
+      "mean_rel_err_pct": 0.0,
+      "correlation": 0.0
+    },
+    "loadbus": {
+      "n": 24,
+      "mae": 50.0,
+      "max_diff": 50.0,
+      "max_rel_err_pct": 0.0,
+      "mean_rel_err_pct": 0.0,
+      "correlation": 0.0
+    }
+  }
+}

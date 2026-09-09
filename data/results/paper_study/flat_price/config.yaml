@@ -1,0 +1,96 @@
+run_water: true
+run_energy: true
+run_nexus: true
+T: 24
+paths:
+  output_dir: /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/results/paper_runs
+water:
+  network: /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/inputs/system_config/water/SNET.inp
+  min_pressure_m: 20.0
+  terminal_tank_closure: true
+  n_pipe_segments: 12
+  pump_efficiency: 0.75
+energy:
+  network: /Users/abdelrahmanaltawil/Developer/GitHub/stochastic-hydro-wind-coordination/data/inputs/system_config/energy/master.dss
+  base_power: 1000.0
+  voltage_tolerance: 0.1
+  n_current_segments: 5
+  technologies:
+    pv:
+      capacity_kw: 100.0
+      irradiance_profile:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0.05
+      - 0.2
+      - 0.4
+      - 0.6
+      - 0.8
+      - 0.95
+      - 1
+      - 0.95
+      - 0.8
+      - 0.6
+      - 0.4
+      - 0.2
+      - 0.05
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      bus: loadbus
+    storage:
+      capacity_kwh: 200.0
+      charge_efficiency: 0.95
+      discharge_efficiency: 0.95
+      max_charge_kw: 50.0
+      max_discharge_kw: 50.0
+      initial_soc_fraction: 0.5
+      bus: loadbus
+  cost:
+    grid_import_tariff:
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    - 0.1
+    grid_export_tariff: 0.0
+nexus:
+  pump_efficiency: 0.75
+  pump_bus:
+    PU1: loadbus
+solver:
+  name: gurobi
+  timeout: 120
+  verbose: false
+simulation:
+  mode: daily
+metrics:
+  min_pressure_threshold: 20.0
+  voltage_tolerance: 0.1
+logging:
+  level: INFO

@@ -1,0 +1,137 @@
+\subsection{Illustrative Case and Comparison Protocol}
+The water network is the supplied SNET example with one reservoir, one
+fixed-speed pump, two junctions, two pipes, and one cylindrical tank
+(Table~\ref{tab:case}). The tank has a 12~m diameter, 25~m elevation,
+water-level bounds of 0--6~m, and an initial level of 3~m. Nominal demand
+is 25~L/s with the supplied 24-hour pattern; a 20~m junction-pressure floor
+and terminal tank replenishment are enforced. The pump design point is
+50~L/s at 40~m. Pipe head losses use 12 segments over each signed flow
+domain and the pump curve six segments. The electrical network is the
+supplied two-bus 115~kV circuit with a 1000~kW nominal load and its daily
+multipliers; grid exchange is available at the source bus only. This lightly
+loaded circuit is an illustrative input, not a representative low-voltage
+feeder or a congestion stress test.
+
+\begin{table}[!t]
+\caption{Case-Study Data (Synthetic Profiles, One-Hour Intervals)}
+\label{tab:case}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lp{5.55cm}@{}}
+\toprule
+Item & Value \\
+\midrule
+Water network & SNET: 1 reservoir, 1 pump, 2 junctions, 2 pipes, 1 tank \\
+Tank & 12~m diameter, elevation 25~m, level 0--6~m, initial 3~m \\
+Demand, pressure floor & 25~L/s nominal with daily pattern; 20~m \\
+Pump & Design point 50~L/s at 40~m; $\eta_p=0.75$; $\overline{P}_p=25.948$~kW \\
+PWL segments & 12 (pipes, signed domain), 6 (pump), 5 (line currents) \\
+Electrical network & Two-bus 115~kV circuit, 1000~kW nominal load \\
+PV & 100~kW at the load bus, availability peaking at hour 12 \\
+Battery & 200~kWh, 50~kW charge/discharge, $\eta=0.95$, $e^0=100$~kWh \\
+Voltage band & $0.9\le v\le1.1$~p.u. \\
+Purchase price & 0.08 (h 0--6, 21--23), 0.16 (h 7--15), 0.32 (h 16--20) \\
+Sale price & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+One 100~kW PV installation and one 200~kWh battery are located at the load
+bus. The battery has 50~kW charge and discharge limits, efficiencies of
+0.95, and an initial and minimum terminal energy of 100~kWh. The synthetic
+purchase prices are 0.08 for hours 0--6 and 21--23, 0.16 for hours 7--15,
+and 0.32 for hours 16--20, in currency units per kWh; exports earn nothing.
+These profiles are controlled experimental inputs, not observations or an
+actual utility tariff. With a wire-to-water efficiency of 0.75 the
+calibrated on-state pump power from \eqref{eq:c_calib} is 25.948~kW.
+
+The independent baseline first minimizes the water block alone under a
+uniform pump energy price, then fixes that pump schedule while optimizing
+the electrical dispatch under the time-varying prices. Joint scheduling
+releases the pump binaries and optimizes the same cost with identical
+network, asset, and terminal constraints. Because the uniform-price water
+problem can have several optimal schedules, the comparison measures the
+improvement over this explicit reproducible baseline rather than a universal
+bound on the value of coordination. A separate flat-price joint case (0.10
+per kWh in every hour) is a tariff sensitivity and is not directly
+comparable in monetary terms.
+
+\subsection{Optimization Outcomes}
+Table~\ref{tab:computed} reports the saved solver outputs. Joint scheduling
+reduces the daily electricity procurement cost from 2943.26 to 2941.18
+relative to the independent baseline, a difference of 2.08 (0.07\%).
+Both schedules operate the pump for 9 hours and import the same energy, 16\,954~kWh; the saving comes entirely from timing (Fig.~\ref{fig:computed}). Relative to the baseline, the joint schedule drops pumping in hours 0, 5, and 17 and adds hours 6, 8, and 13; at 25.948~kW per on-hour this tariff exchange is worth $25.948\times(0.48-0.40)=2.08$. The peak grid import changes from 920.0 to 915.9~kW.
+Both initial reserves are preserved in the optimization: the terminal tank heads are 28.04, 28.07, 28.19~m against an initial head of 28~m, and the terminal battery energy equals its initial 100~kWh. The available PV energy (700~kWh) is dispatched in full in every case. Under the time-varying tariff the battery charges 210.5~kWh and discharges 190~kWh; under the flat price it is not cycled at all, because without price differences the round-trip losses make storage arbitrage unprofitable. All values refer to the MILP approximation.
+
+\begin{table}[!t]
+\caption{Computed Schedules. Costs Are in Synthetic Currency Units; the Flat-Price Case Uses a Different Tariff. Solve Time Is Wall-Clock Solver-Call Time on the Recorded Machine}
+\label{tab:computed}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Case & Cost & On (h) & Import (kWh) & Peak (kW) & Solve (s) \\
+\midrule
+Independent & 2943.26 & 9 & 16954.05 & 920.0 & 0.07 \\
+Joint & 2941.18 & 9 & 16954.05 & 915.9 & 4.25 \\
+Joint, flat price & 1693.35 & 9 & 16933.53 & 960.0 & 2.66 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The joint model has 3219 variables and 2598 constraints.
+All three coupled solves and the independent water-only solve terminated as optimal at the $10^{-4}$ gap tolerance. The water-only solve took 0.43~s. The run directory
+records full-precision dispatch, inventory trajectories, solver logs,
+algebraic residuals (maximum constraint violation below $5\times10^{-6}$), the
+input configuration, dependency versions, and input and source hashes.
+Timing includes the Pyomo interface overhead and is not an isolated solver
+benchmark.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{coordination_results.pdf}
+\caption{Purchase price and optimized schedules for the independent baseline and joint scheduling: pump electrical load, tank water level, and grid import. Tank markers are inventory boundaries; power values apply over the following hourly interval. The dotted line marks the initial level, which the terminal level must reach.}
+\label{fig:computed}
+\end{figure}
+
+\subsection{Independent Nonlinear Replay}
+Each optimized pump schedule is replayed in EPANET with a five-minute
+hydraulic time step and hourly reports, the original level controls being
+replaced by the hourly commands. The optimized net bus injections are
+replayed as balanced constant-power snapshots in OpenDSS, which retains the
+nonlinear AC behavior of the original circuit whereas the MILP neglects
+series losses and shunt effects. The electrical replay keeps the fixed
+on-state pump-power coefficient and therefore does not validate the pump
+energy calibration. Table~\ref{tab:replay} summarizes the discrepancies.
+
+\begin{table}[!t]
+\caption{Replay of the Optimized Schedules in EPANET and OpenDSS}
+\label{tab:replay}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Metric & Independent & Joint \\
+\midrule
+Minimum junction pressure (m) & 25.06 & 25.07 \\
+Pressure violations at report times & 0 & 0 \\
+Pump-status mismatches at report times & 0 & 0 \\
+Maximum tank-head discrepancy (m) & 0.154 & 0.135 \\
+Maximum flow discrepancy (L/s) & 0.466 & 0.437 \\
+Terminal tank-head change vs.\ initial (m) & $-0.114$ & $-0.067$ \\
+All OpenDSS snapshots converged & yes & yes \\
+Maximum voltage discrepancy (p.u.) & 0.00034 & 0.00034 \\
+Voltage violations & 0 & 0 \\
+Peak line loading (\%) & 1.31 & 1.29 \\
+Maximum grid-import discrepancy (kW) & 0.005 & 0.005 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Both schedules satisfy the pressure floor and the voltage band at every report time, and the pump statuses imposed in EPANET match the MILP decisions. Tank-head and flow discrepancies remain below 0.16~m and 0.47~L/s. The electrical discrepancies are small because the feeder is lightly loaded and the circuit is short, which is the regime in which the flat-voltage linearization is most accurate. The replay, however, ends with the tank 0.114~m (independent) and 0.067~m (joint) below its initial level despite the MILP replenishment constraint \eqref{eq:w_tank_terminal}. The hourly hydraulic approximation therefore does not preserve the terminal requirement exactly, and a reserve margin or a simulation-informed refinement of \eqref{eq:w_tank} is needed before operational use. Hourly
+report checks do not certify feasibility between reports. These results
+support the formulation as a scheduling prototype with explicit simulation
+checks; they are not a certification for field operation.

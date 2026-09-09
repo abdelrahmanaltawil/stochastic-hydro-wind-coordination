@@ -24,6 +24,8 @@ def calc_line_admittance(R: float, X: float) -> tuple[float, float]:
     Returns:
         (G, B) conductance and susceptance.
     """
+    if not np.isfinite(R) or not np.isfinite(X) or R < 0 or R ** 2 + X ** 2 <= 0:
+        raise ValueError("Line impedance must be finite and nonzero, with nonnegative resistance.")
     denom = R ** 2 + X ** 2
     return R / denom, -X / denom
 
@@ -72,8 +74,10 @@ def create_pwl_current_segments(I_max: float, n_seg: int = 5) -> list[tuple]:
     Returns:
         List of (I, I²) tuples as breakpoints.
     """
+    if not np.isfinite(I_max) or I_max <= 0 or n_seg < 1:
+        raise ValueError("Current limit and segment count must be positive.")
     breakpoints = np.linspace(0, I_max, n_seg + 1)
-    return [(round(float(x), 6), round(float(x ** 2), 6)) for x in breakpoints]
+    return [(float(x), float(x ** 2)) for x in breakpoints]
 
 
 # ---------------------------------------------------------------------------

@@ -591,7 +591,133 @@ When you couple the two later, the natural bridge is: replace the pump-cost term
 
 ---
 
+## 4. Coupled Day-Ahead Problem (Nexus)
+
+The first nexus link makes pump electricity a real grid load. Following Thomas & Sela (MILPNet), each pump's mean hydraulic power is taken from a one-shot EPANET pre-simulation and drawn as a fixed load whenever the pump is ON; that load enters the energy-hub balance and is therefore priced through the grid import tariff. The pump-cost proxy that previously sat in the water objective is dropped, so pumping is paid for exactly once — on the energy side.
+
+### 4.1 Coupling Parameters and Variables
+
+| Symbol | Description |
+|---|---|
+| $\bar{P}_p$ | Mean electrical power of pump $p$ [kW], a precomputed **parameter** |
+| $\mathrm{bus}(p)$ | Electrical bus that pump $p$ is wired to |
+| $\eta_p$ | Wire-to-water efficiency ($\eta_p = 1$ reproduces MILPNet) |
+| $y_p^t \in \{0,1\}$ | Pump operating status — $y_p^t = 1$ when pump $p$ is **ON** (the code's `Status`) |
+| $L_{b,t}^{pump}$ | Coupled electrical demand contributed by pumps at bus $b$ in hour $t$ |
+
+> **Convention.** Here $y_p^t = 1$ means *operating*, matching the implementation. This is the complement of the paper's water-side flag in (Eq. 16), where $y_p^t = 0$ meant *open/operating*.
+
+### 4.2 Coupling Constraints
+
+**(N1) Per-pump mean electrical power** (parameter, from the shared EPANET pre-simulation):
+
+$$
+\bar{P}_p = \frac{\rho g}{\eta_p} \,\big\langle\, Q_p^{\tau}\,\Delta H_p^{\tau} \,\big\rangle_{\tau:\,Q_p^{\tau} > 0},
+\qquad \rho = 1000\ \tfrac{\text{kg}}{\text{m}^3}, \; g = 9.81\ \tfrac{\text{m}}{\text{s}^2}
+$$
+
+where $\langle\cdot\rangle$ is the average over the timesteps in which the pump runs in the baseline simulation.
+
+**(N2) Pump electrical demand per bus:**
+
+$$
+L_{b,t}^{pump} = \sum_{p\,:\,\mathrm{bus}(p) = b} \bar{P}_p \, y_p^t,
+\qquad \forall b \in \mathcal{N}, \; \forall t \in \mathcal{T}
+$$
+
+**(N3) Augmented hub and nodal balances** — $L_{b,t}^{pump}$ is added to the electrical demand in (E1) and (E7):
+
+$$
+\begin{aligned}
+\text{(E1)}\;\; & P_{b,t}^{import} + P_{b,t}^{pv} + \eta^{dis} Q_{b,t}^{dis} - \eta^{ch} Q_{b,t}^{ch} - P_{b,t}^{export}
+   = L_{b,t}^{load} + L_{b,t}^{pump} \\[2pt]
+\text{(E7)}\;\; & \sum_{m:(b,m)\in\mathcal{E}} P\big((b,m),t\big)
+   = P_{b,t}^{import} - P_{b,t}^{export} + P_{b,t}^{pv} - L_{b,t}^{load} - L_{b,t}^{pump}
+\end{aligned}
+$$
+
+### 4.3 Objective
+
+Total day-ahead grid-electricity cost plus the pump-switching penalty. Pumping energy is now embedded in $P^{import}$ via (N2)–(N3), so no separate pump electricity cost term is needed on the water side, but the mechanical switching penalty remains. The large-$M$ term is the water demand-slack penalty that keeps the hydraulic problem feasible.
+
+$$
+\boxed{
+\min \; f \;=\;
+\underbrace{\sum_{t \in \mathcal{T}} c_t \sum_{b \in \mathcal{N}} P_{b,t}^{import}}_{\text{grid energy cost (incl. pumping)}}
+\;+\;
+\underbrace{\bar{p} \sum_{t=1}^{T-1} \sum_{p \in \mathcal{P}} y_{sw}^{p,t}}_{\text{pump switching penalty}}
+\;+\;
+\underbrace{M \sum_{i \in \mathcal{J}} \sum_{t \in \mathcal{T}} \big( s_{i,t}^{+} + s_{i,t}^{-} \big)}_{\text{water demand-slack penalty}}
+}
+$$
+
+with $c_t$ the hourly import tariff, $\bar{p}$ the switching penalty, and $M \gg 0$ (e.g. $10^9$).
+
+### 4.4 Complete Coupled Problem
+
+$$
+\begin{aligned}
+\min \; & f \quad \text{(§4.3)} \\
+\text{s.t.} \quad
+  & \text{(W1)–(W16)} && \text{water hydraulics, tanks, pumps, valves, tank-link logic} \\
+  & \text{(E1)–(E13)} && \text{energy hub, linearized AC power flow, current limits} \\
+  & \text{(N1)–(N3)} && \text{pump electrical coupling}
+\end{aligned}
+$$
+
+The problem remains a single MILP: (N1) is a parameter, (N2)–(N3) are linear in the existing pump status $y_p^t$ and bus variables, so no new nonlinearity or integrality is introduced.
+
+---
+
+## 5. Framework Methodology
+
+The problem is solved using a holistic framework that integrates physical simulations with mathematical optimization. The steps are summarized in the flowchart below:
+
+```mermaid
+flowchart TD
+    A[Input Data & Configurations] --> B(EPANET Pre-Simulation)
+    B -->|Pipe PWL bounds & Avg pump power| C1[Build Water MILP]
+    
+    A --> C2[Build Energy MILP]
+    
+    C1 --> D{Coupled Nexus?}
+    C2 --> D
+    
+    D -->|Yes| E[Map pump power to electrical grid load]
+    D -->|No| F[Keep Decoupled]
+    
+    E --> G[Solve MILP Model]
+    F --> G
+    
+    G --> H[Extract Optimal Schedules]
+    H --> I(EPANET Re-Simulation)
+    I -->|Verify hydraulics| J[Final Results & Post-processing]
+```
+
+---
+
 ## References
 
 - Thomas, M., & Sela, L. (2024). *A Mixed-Integer Linear Programming Framework for Optimization of Water Network Operations Problems.* Water Resources Research, 60, e2023WR034526.
 - Morvaj, B., Evins, R., & Carmeliet, J. (2016). *Optimization framework for distributed energy systems with integrated electrical grid constraints.* Applied Energy, 171, 296–313.
+
+
+```mermaid
+graph TD
+    A[System Data & Configurations] --> B[Hydraulic Initialization]
+    A --> C[Energy Network Formulation]
+    
+    B --> D[Water Network Formulation]
+    
+    D --> E[Water-Energy Nexus Coupling]
+    C --> E
+    
+    E --> F[Monolithic MILP Optimization]
+    
+    F --> G[Optimized Schedule]
+    
+    classDef default fill:#f4f0ff,stroke:#b39ddb,stroke-width:2px,color:#333,font-family:sans-serif;
+    classDef coupling fill:#ede7f6,stroke:#9575cd,stroke-width:2px,color:#333,font-family:sans-serif,font-weight:bold;
+    
+    class E coupling;
+```
