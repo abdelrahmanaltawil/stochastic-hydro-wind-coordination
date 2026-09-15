@@ -1,0 +1,33 @@
+{
+  "run_id": "baseline_flat",
+  "solver_status": "ok",
+  "termination_condition": "optimal",
+  "objective_value": 107.93634210526318,
+  "solver_time_s": null,
+  "num_variables": 3219,
+  "num_constraints": 2598,
+  "solver_lower_bound": 107.93634210526315,
+  "solver_upper_bound": 107.93634210526317,
+  "solver_relative_gap": 1.3165959155205667e-16,
+  "horizon_hours": 24.0,
+  "water_cost": 0.0,
+  "energy_cost": 107.93634210526318,
+  "water_slack_violations": 0,
+  "water_slack_volume_m3": 0.0,
+  "pump_on_hours": 9.0,
+  "grid_import_kwh": 855.9631578947369,
+  "grid_export_kwh": 211.6236842105263,
+  "pv_generation_kwh": 1360.0,
+  "battery_charge_kwh": 315.7894736842105,
+  "battery_discharge_kwh": 285.0,
+  "pump_energy_kwh": 233.54999999999995,
+  "max_constraint_violation": 1.1216464201879717e-08,
+  "feasible": true,
+  "build_time_s": 0.07860361599978205,
+  "wall_solve_time_s": 0.5012575470000229,
+  "residuals": {
+    "max_constraint_violation": 1.1216464201879717e-08,
+    "max_bound_violation": 2.4524967360732174e-17,
+    "max_integrality_violation": 0.0
+  }
+}

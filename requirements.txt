@@ -7,7 +7,7 @@ scipy>=1.7.0
 
 # Optimization
 pyomo>=6.9.0
-highspy>=1.8.0
+highspy>=1.8.0,<1.12  # 1.15.1 returned invalid MIP bounds on the water block; see README
 
 # Water network simulation
 wntr>=1.0.0

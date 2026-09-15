@@ -1,0 +1,25 @@
+{
+  "water": {
+    "hydraulic_timestep_seconds": 300,
+    "report_timestep_seconds": 3600,
+    "min_junction_pressure_m": 25.92205238342285,
+    "pressure_violations_at_report_times": 0,
+    "max_flow_error_m3s": 0.00035036748309844046,
+    "flow_rmse_m3s": 0.0001674308269751246,
+    "max_tank_head_error_m": 0.13944794665461657,
+    "tank_bound_violations_at_report_times": 0,
+    "terminal_tank_change_m": {
+      "T1": -0.13731765747070312
+    },
+    "pump_status_mismatches_at_report_times": 0
+  },
+  "energy": {
+    "all_snapshots_converged": true,
+    "min_voltage_pu": 0.999976849685868,
+    "max_voltage_pu": 1.000000000063278,
+    "max_voltage_error_pu": 2.2362589587543447e-05,
+    "voltage_violations": 0,
+    "max_line_loading_percent": 0.17449062486019948,
+    "max_grid_import_error_kw": 8.977393605391626e-05
+  }
+}

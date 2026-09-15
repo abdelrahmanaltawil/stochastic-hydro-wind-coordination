@@ -63,24 +63,62 @@ def pump_head_and_slope(pump, flow):
     return float(h1 + slope * (flow-q1)), float(slope)
 
 
-def create_piecewise_pump_curve(pump, num_segments=5):
-    """Nonnegative head/flow breakpoints through shutoff and zero-head flow."""
-    if num_segments < 1:
-        raise ValueError("Pump curve requires at least one segment.")
+def pump_zero_head_flow(pump):
+    """Flow at which the fixed-speed pump curve reaches zero head."""
     pts = sorted(pump.get_pump_curve().points)
     if len(pts) in (1, 3):
         A, B, C = pump.get_head_curve_coefficients()
         if B <= 0:
             raise ValueError("Pump curve must have a finite zero-head flow.")
-        cutoff = (A / B) ** (1 / C)
+        return float((A / B) ** (1 / C))
+    shutoff, _ = pump_head_and_slope(pump, 0.)
+    last_head, last_slope = pump_head_and_slope(pump, pts[-1][0])
+    cutoff = pts[-1][0] - last_head / last_slope
+    if shutoff <= 0 or cutoff <= 0:
+        raise ValueError("Pump curve must have positive shutoff head and flow range.")
+    return float(cutoff)
+
+
+def pump_flow_at_head(pump, head, tol=1e-9):
+    """Largest flow at which the (decreasing) pump curve still delivers ``head``.
+
+    Bisection on the curve between zero flow and the zero-head flow; returns
+    the zero-head flow when ``head`` is nonpositive and 0 when it exceeds the
+    shutoff head.
+    """
+    cutoff = pump_zero_head_flow(pump)
+    if head <= 0:
+        return cutoff
+    if pump_head_and_slope(pump, 0.)[0] <= head:
+        return 0.0
+    lo, hi = 0.0, cutoff
+    while hi - lo > tol * max(cutoff, 1.0):
+        mid = 0.5 * (lo + hi)
+        if pump_head_and_slope(pump, mid)[0] >= head:
+            lo = mid
+        else:
+            hi = mid
+    return float(lo)
+
+
+def create_piecewise_pump_curve(pump, num_segments=5, max_flow=None):
+    """Nonnegative head/flow breakpoints through shutoff and zero-head flow.
+
+    ``max_flow`` truncates the interpolation domain to [0, max_flow] (the
+    hydraulically admissible flow range) while keeping the segment count.
+    """
+    if num_segments < 1:
+        raise ValueError("Pump curve requires at least one segment.")
+    pts = sorted(pump.get_pump_curve().points)
+    cutoff = pump_zero_head_flow(pump)
+    if max_flow is not None:
+        if not np.isfinite(max_flow) or max_flow <= 0:
+            raise ValueError("Pump flow ceiling must be positive.")
+        cutoff = min(cutoff, float(max_flow))
+    if len(pts) in (1, 3):
         flows = np.linspace(0, cutoff, num_segments + 1)
     else:
-        shutoff, _ = pump_head_and_slope(pump, 0.)
-        last_head, last_slope = pump_head_and_slope(pump, pts[-1][0])
-        cutoff = pts[-1][0] - last_head / last_slope
         flows = np.unique([0., cutoff] + [q for q, _ in pts if 0 < q < cutoff])
-        if shutoff <= 0 or cutoff <= 0:
-            raise ValueError("Pump curve must have positive shutoff head and flow range.")
     return [(float(q), max(0., pump_head_and_slope(pump, q)[0])) for q in flows]
 
 

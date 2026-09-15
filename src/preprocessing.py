@@ -225,6 +225,14 @@ def _build_energy_data(energy_cfg: dict, dss_path: Path, T: int) -> dict:
         "voltage_tolerance": energy_cfg.get("voltage_tolerance", 0.10),
         "n_current_segments": energy_cfg.get("n_current_segments", 5),
     }
+    # Optional point-of-common-coupling ratings (kW). When absent the model
+    # derives loose limits from the installed loads and assets.
+    for key in ("max_grid_import_kw", "max_grid_export_kw"):
+        if energy_cfg.get(key) is not None:
+            limit = float(energy_cfg[key])
+            if not math.isfinite(limit) or limit < 0:
+                raise ValueError(f"energy.{key} must be finite and nonnegative")
+            network[key] = limit
     return {
         "dss_file": str(dss_path), "buses": buses, "lines": lines,
         "line_names": line_names, "loads": loads, "reactive_loads": reactive_loads,

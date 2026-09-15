@@ -1,0 +1,505 @@
+INFO: EPANET pre-simulation: 3 links over 24 h
+INFO: Loaded water network: /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Compiling OpenDSS circuit: /home/claude/econex/data/inputs/system_config/energy/master.dss
+INFO: Loaded energy network: /home/claude/econex/data/inputs/system_config/energy/master.dss
+INFO: Nexus: reusing shared EPANET pre-simulation for pump power
+INFO: E1: integrated benchmark
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Nexus coupling active: 1 pumps, total mean pump load 25.95 kW (η=0.75); pump electricity now priced through the energy import tariff.
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Saved /home/claude/econex/data/results/paper_study/integrated/summary.json
+INFO: Saved /home/claude/econex/data/results/paper_study/integrated/config.yaml
+INFO: Saved /home/claude/econex/data/results/paper_study/integrated/water/flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/integrated/water/heads.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/integrated/water/pump_status.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/integrated/water/slack.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/integrated/energy/dispatch.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/integrated/energy/soc.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/integrated/energy/line_flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/integrated/energy/voltages.csv
+WARNING: EPANET warning 6 - At   0:00:00, system has negative pressures - negative pressures occurred at one or more junctions with positive demand
+WARNING: Warnings were issued during simulation
+INFO: Saved /home/claude/econex/data/results/paper_study/integrated/validation.json
+INFO: Solving with highs (timeout=300s)
+INFO: Solver finished: ok / optimal
+INFO: Saved /home/claude/econex/data/results/paper_study/internal_prices.csv
+INFO: E1: flat-tariff baseline
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Nexus coupling active: 1 pumps, total mean pump load 25.95 kW (η=0.75); pump electricity now priced through the energy import tariff.
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Saved /home/claude/econex/data/results/paper_study/baseline_flat/summary.json
+INFO: Saved /home/claude/econex/data/results/paper_study/baseline_flat/config.yaml
+INFO: Saved /home/claude/econex/data/results/paper_study/baseline_flat/water/flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/baseline_flat/water/heads.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/baseline_flat/water/pump_status.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/baseline_flat/water/slack.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/baseline_flat/energy/dispatch.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/baseline_flat/energy/soc.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/baseline_flat/energy/line_flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/baseline_flat/energy/voltages.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/baseline_flat/validation.json
+INFO: E1: pass-through and internal-price tariffs
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Nexus coupling active: 1 pumps, total mean pump load 25.95 kW (η=0.75); pump electricity now priced through the energy import tariff.
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_passthrough/summary.json
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_passthrough/config.yaml
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_passthrough/water/flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_passthrough/water/heads.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_passthrough/water/pump_status.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_passthrough/water/slack.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_passthrough/energy/dispatch.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_passthrough/energy/soc.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_passthrough/energy/line_flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_passthrough/energy/voltages.csv
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Nexus coupling active: 1 pumps, total mean pump load 25.95 kW (η=0.75); pump electricity now priced through the energy import tariff.
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_internal/summary.json
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_internal/config.yaml
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_internal/water/flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_internal/water/heads.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_internal/water/pump_status.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_internal/water/slack.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_internal/energy/dispatch.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_internal/energy/soc.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_internal/energy/line_flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/tariff_internal/energy/voltages.csv
+INFO: E2: contract accounting
+INFO: E4: price coordination
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: bundle_marginal: reusing saved run /home/claude/econex/data/results/paper_study/coordination_bundle_marginal.json
+INFO: bundle_market: reusing saved run /home/claude/econex/data/results/paper_study/coordination_bundle_market.json
+INFO: subgradient_marginal: reusing saved run /home/claude/econex/data/results/paper_study/coordination_subgradient_marginal.json
+INFO: E6: dual function at the restricted-LP prices
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: E5: connection-limit sweeps
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Nexus coupling active: 1 pumps, total mean pump load 25.95 kW (η=0.75); pump electricity now priced through the energy import tariff.
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_150/summary.json
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_150/config.yaml
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_150/water/flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_150/water/heads.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_150/water/pump_status.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_150/water/slack.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_150/energy/dispatch.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_150/energy/soc.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_150/energy/line_flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_150/energy/voltages.csv
+INFO: Solving with highs (timeout=300s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Nexus coupling active: 1 pumps, total mean pump load 25.95 kW (η=0.75); pump electricity now priced through the energy import tariff.
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_125/summary.json
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_125/config.yaml
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_125/water/flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_125/water/heads.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_125/water/pump_status.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_125/water/slack.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_125/energy/dispatch.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_125/energy/soc.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_125/energy/line_flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_125/energy/voltages.csv
+INFO: Solving with highs (timeout=300s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Nexus coupling active: 1 pumps, total mean pump load 25.95 kW (η=0.75); pump electricity now priced through the energy import tariff.
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_100/summary.json
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_100/config.yaml
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_100/water/flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_100/water/heads.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_100/water/pump_status.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_100/water/slack.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_100/energy/dispatch.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_100/energy/soc.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_100/energy/line_flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_100/energy/voltages.csv
+INFO: Solving with highs (timeout=300s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Nexus coupling active: 1 pumps, total mean pump load 25.95 kW (η=0.75); pump electricity now priced through the energy import tariff.
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_90/summary.json
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_90/config.yaml
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_90/water/flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_90/water/heads.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_90/water/pump_status.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_90/water/slack.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_90/energy/dispatch.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_90/energy/soc.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_90/energy/line_flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_90/energy/voltages.csv
+INFO: Solving with highs (timeout=300s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Nexus coupling active: 1 pumps, total mean pump load 25.95 kW (η=0.75); pump electricity now priced through the energy import tariff.
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_80/summary.json
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_80/config.yaml
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_80/water/flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_80/water/heads.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_80/water/pump_status.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_80/water/slack.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_80/energy/dispatch.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_80/energy/soc.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_80/energy/line_flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_80/energy/voltages.csv
+INFO: Solving with highs (timeout=300s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Nexus coupling active: 1 pumps, total mean pump load 25.95 kW (η=0.75); pump electricity now priced through the energy import tariff.
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_70/summary.json
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_70/config.yaml
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_70/water/flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_70/water/heads.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_70/water/pump_status.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_70/water/slack.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_70/energy/dispatch.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_70/energy/soc.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_70/energy/line_flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_import_70/energy/voltages.csv
+INFO: Solving with highs (timeout=300s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Nexus coupling active: 1 pumps, total mean pump load 25.95 kW (η=0.75); pump electricity now priced through the energy import tariff.
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: error / infeasible
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: error / infeasible
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: error / infeasible
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Nexus coupling active: 1 pumps, total mean pump load 25.95 kW (η=0.75); pump electricity now priced through the energy import tariff.
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_50/summary.json
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_50/config.yaml
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_50/water/flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_50/water/heads.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_50/water/pump_status.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_50/water/slack.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_50/energy/dispatch.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_50/energy/soc.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_50/energy/line_flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_50/energy/voltages.csv
+INFO: Solving with highs (timeout=300s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Nexus coupling active: 1 pumps, total mean pump load 25.95 kW (η=0.75); pump electricity now priced through the energy import tariff.
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_25/summary.json
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_25/config.yaml
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_25/water/flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_25/water/heads.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_25/water/pump_status.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_25/water/slack.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_25/energy/dispatch.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_25/energy/soc.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_25/energy/line_flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_25/energy/voltages.csv
+INFO: Solving with highs (timeout=300s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Building water sub-model from /home/claude/econex/data/inputs/system_config/water/SNET.inp
+INFO: Water sub-model: pipe PWL bounds from shared EPANET pre-simulation
+INFO: Water sub-model: 4 nodes, 3 links, 1 pumps (head ceiling 89.5 m)
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Nexus coupling active: 1 pumps, total mean pump load 25.95 kW (η=0.75); pump electricity now priced through the energy import tariff.
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_0/summary.json
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_0/config.yaml
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_0/water/flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_0/water/heads.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_0/water/pump_status.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_0/water/slack.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_0/energy/dispatch.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_0/energy/soc.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_0/energy/line_flows.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/sweep_export_0/energy/voltages.csv
+INFO: Solving with highs (timeout=300s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Energy sub-model: 2 buses, 1 lines
+INFO: Model assembled successfully
+INFO: Solving with highs (timeout=600s)
+INFO: Solver finished: ok / optimal
+INFO: Saved /home/claude/econex/data/results/paper_study/study.json
+INFO: Saved /home/claude/econex/data/results/paper_study/comparison.csv
+INFO: Saved /home/claude/econex/data/results/paper_study/config.yaml
+{
+  "gain": 17.029500000000198,
+  "integrated_cost": 90.90684210526298,
+  "coordination": {
+    "bundle_marginal": {
+      "name": "bundle_marginal",
+      "master": "bundle",
+      "iterations": 7,
+      "converged": true,
+      "messages": 336,
+      "best_upper": 90.90684210526314,
+      "best_lower": 90.54984210526317,
+      "final_gap": 0.0039270971439816635,
+      "gap_within_1pct_iteration": 0,
+      "primal_reached_optimum_iteration": 1,
+      "best_iteration": 1,
+      "best_on_hours": [
+        5,
+        8,
+        10,
+        11,
+        12,
+        13,
+        15,
+        21,
+        23
+      ],
+      "elapsed_s": 268.7231692129999,
+      "water_time_total_s": 266.2065214000004,
+      "energy_time_total_s": 1.7345071759991697,
+      "initial_dual": 90.54984210526317,
+      "initial_primal": 91.20684210526316,
+      "initial_gap": 0.007203406946616385
+    },
+    "bundle_market": {
+      "name": "bundle_market",
+      "master": "bundle",
+      "iterations": 29,
+      "converged": true,
+      "messages": 1392,
+      "best_upper": 90.90684210526314,
+      "best_lower": 90.88751210526316,
+      "final_gap": 0.00021263525992465618,
+      "gap_within_1pct_iteration": 16,
+      "primal_reached_optimum_iteration": 6,
+      "best_iteration": 6,
+      "best_on_hours": [
+        5,
+        8,
+        10,
+        11,
+        12,
+        13,
+        15,
+        21,
+        23
+      ],
+      "elapsed_s": 3433.267351130001,
+      "water_time_total_s": 3422.0972427410015,
+      "energy_time_total_s": 5.6322722560007605,
+      "initial_dual": 84.15984210526312,
+      "initial_primal": 91.65684210526315,
+      "initial_gap": 0.08179422100741929
+    },
+    "subgradient_marginal": {
+      "name": "subgradient_marginal",
+      "master": "subgradient",
+      "iterations": 15,
+      "converged": false,
+      "messages": 720,
+      "best_upper": 90.90684210526314,
+      "best_lower": 90.54984210526317,
+      "final_gap": 0.0039270971439816635,
+      "gap_within_1pct_iteration": 0,
+      "primal_reached_optimum_iteration": 1,
+      "best_iteration": 1,
+      "best_on_hours": [
+        5,
+        8,
+        10,
+        11,
+        12,
+        13,
+        15,
+        21,
+        23
+      ],
+      "elapsed_s": 644.0105321049999,
+      "water_time_total_s": 637.971157712,
+      "energy_time_total_s": 3.9776102469998023,
+      "initial_dual": 90.54984210526317,
+      "initial_primal": 91.20684210526316,
+      "initial_gap": 0.007203406946616385
+    }
+  }
+}

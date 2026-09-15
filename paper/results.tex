@@ -1,16 +1,16 @@
-\subsection{Illustrative Case and Comparison Protocol}
-The water network is the supplied SNET example with one reservoir, one
-fixed-speed pump, two junctions, two pipes, and one cylindrical tank
-(Table~\ref{tab:case}). The tank has a 12~m diameter, 25~m elevation,
-water-level bounds of 0--6~m, and an initial level of 3~m. Nominal demand
-is 25~L/s with the supplied 24-hour pattern; a 20~m junction-pressure floor
-and terminal tank replenishment are enforced. The pump design point is
-50~L/s at 40~m. Pipe head losses use 12 segments over each signed flow
-domain and the pump curve six segments. The electrical network is the
-supplied two-bus 115~kV circuit with a 1000~kW nominal load and its daily
-multipliers; grid exchange is available at the source bus only. This lightly
-loaded circuit is an illustrative input, not a representative low-voltage
-feeder or a congestion stress test.
+\subsection{Test System and Data}
+The water operator runs the SNET network of the repository: one ground-level reservoir, one fixed-speed pump
+(design point 50~L/s at 40~m, wire-to-water efficiency 0.75, calibrated on-state power $\overline{P}_p=25.95$~kW),
+two junctions, two pipes, and one elevated cylindrical tank (12~m diameter, 25~m
+elevation, level 0--6~m, initial 3~m). Daily
+demand is 2,214~m$^3$ with the diurnal pattern of Fig.~\ref{fig:inputs}; a 20~m pressure
+floor and terminal replenishment are enforced. The tank holds about 2.8 pump-hours of water, so
+the shiftable volume is tank-limited in the sense of the two-period model. The energy operator owns the two-bus feeder of the
+repository with its daily load shape scaled to a 100~kW peak, a 200~kW$_\mathrm{p}$
+PV array, a 200~kWh/50~kW battery ($\eta=0.95$, initial and minimum terminal energy 100~kWh), and a connection rated
+150~kW import and 50~kW export. Day-ahead purchase prices are 0.08 in hours 0, 1, 2, 3, 4, 5, 6, 21, 22, and 23; 0.16 in hours 7, 8, 9, 10, 11, 12, 13, 14, and 15; 0.32 in hours 16, 17, 18, 19, and 20
+(unit/kWh); the sale price is 0.03. The flat retail tariff of the baseline is $\bar\tau=0.16$, the
+time average of the purchase price. Profiles are synthetic and illustrative (Table~\ref{tab:case}).
 
 \begin{table}[!t]
 \caption{Case-Study Data (Synthetic Profiles, One-Hour Intervals)}
@@ -18,120 +18,231 @@ feeder or a congestion stress test.
 \centering
 \footnotesize
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}lp{5.55cm}@{}}
+\begin{tabular}{@{}lp{5.4cm}@{}}
 \toprule
 Item & Value \\
 \midrule
 Water network & SNET: 1 reservoir, 1 pump, 2 junctions, 2 pipes, 1 tank \\
 Tank & 12~m diameter, elevation 25~m, level 0--6~m, initial 3~m \\
-Demand, pressure floor & 25~L/s nominal with daily pattern; 20~m \\
-Pump & Design point 50~L/s at 40~m; $\eta_p=0.75$; $\overline{P}_p=25.948$~kW \\
-PWL segments & 12 (pipes, signed domain), 6 (pump), 5 (line currents) \\
-Electrical network & Two-bus 115~kV circuit, 1000~kW nominal load \\
-PV & 100~kW at the load bus, availability peaking at hour 12 \\
-Battery & 200~kWh, 50~kW charge/discharge, $\eta=0.95$, $e^0=100$~kWh \\
-Voltage band & $0.9\le v\le1.1$~p.u. \\
-Purchase price & 0.08 (h 0--6, 21--23), 0.16 (h 7--15), 0.32 (h 16--20) \\
-Sale price & 0 \\
+Demand, pressure floor & 2,214~m$^3$/day with daily pattern; 20~m \\
+Pump & 50~L/s at 40~m; $\eta_p=0.75$; $\overline{P}_p=25.95$~kW; 6 PWL segments \\
+Pipes, line currents & 12 PWL segments (signed domain), 5 segments \\
+Feeder & Two-bus circuit, load shape peaking at 100~kW \\
+PV, battery & 200~kW$_\mathrm{p}$; 200~kWh, 50~kW, $\eta=0.95$, $e^0=100$~kWh \\
+Connection & 150~kW import, 50~kW export; $0.9\le v\le1.1$~p.u. \\
+Prices (unit/kWh) & purchase 0.08/0.16/0.32 (off/mid/on-peak); sale 0.03; flat tariff 0.16 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-One 100~kW PV installation and one 200~kWh battery are located at the load
-bus. The battery has 50~kW charge and discharge limits, efficiencies of
-0.95, and an initial and minimum terminal energy of 100~kWh. The synthetic
-purchase prices are 0.08 for hours 0--6 and 21--23, 0.16 for hours 7--15,
-and 0.32 for hours 16--20, in currency units per kWh; exports earn nothing.
-These profiles are controlled experimental inputs, not observations or an
-actual utility tariff. With a wire-to-water efficiency of 0.75 the
-calibrated on-state pump power from \eqref{eq:c_calib} is 25.948~kW.
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{inputs.pdf}
+\caption{Input profiles: day-ahead purchase and sale prices, water demand, feeder load, and available PV power.}
+\label{fig:inputs}
+\end{figure}
 
-The independent baseline first minimizes the water block alone under a
-uniform pump energy price, then fixes that pump schedule while optimizing
-the electrical dispatch under the time-varying prices. Joint scheduling
-releases the pump binaries and optimizes the same cost with identical
-network, asset, and terminal constraints. Because the uniform-price water
-problem can have several optimal schedules, the comparison measures the
-improvement over this explicit reproducible baseline rather than a universal
-bound on the value of coordination. A separate flat-price joint case (0.10
-per kWh in every hour) is a tariff sensitivity and is not directly
-comparable in monetary terms.
+\subsection{Experiments}
+Six experiments are run: (E1) the flat-tariff baseline and the two tariff benchmarks against the integrated optimum;
+(E2) the payoffs of the revenue-sharing contract, the fee window, and a numerical deviation test; (E3) the replay of the
+baseline and coordinated schedules in EPANET and OpenDSS; (E4) the price coordination scheme with the bundle
+master started from the energy operator's marginal costs and from the market price, and with the subgradient rule of the two-agent model; (E5) sweeps of the import and export
+ratings of the connection; and (E6) the restricted-LP internal prices that verify Proposition~\ref{prop:price}.
+All models were solved with HiGHS 1.11.0 through Pyomo; the integrated MILP has 3219
+variables and 2598 constraints and was solved to a 0.003\% relative gap in
+76~s, the coordination subproblems to a 0.1\% gap. Timing includes the
+Pyomo interface overhead and is not a solver benchmark.
 
-\subsection{Optimization Outcomes}
-Table~\ref{tab:computed} reports the saved solver outputs. Joint scheduling
-reduces the daily electricity procurement cost from 2943.26 to 2941.18
-relative to the independent baseline, a difference of 2.08 (0.07\%).
-Both schedules operate the pump for 9 hours and import the same energy, 16\,954~kWh; the saving comes entirely from timing (Fig.~\ref{fig:computed}). Relative to the baseline, the joint schedule drops pumping in hours 0, 5, and 17 and adds hours 6, 8, and 13; at 25.948~kW per on-hour this tariff exchange is worth $25.948\times(0.48-0.40)=2.08$. The peak grid import changes from 920.0 to 915.9~kW.
-Both initial reserves are preserved in the optimization: the terminal tank heads are 28.04, 28.07, 28.19~m against an initial head of 28~m, and the terminal battery energy equals its initial 100~kWh. The available PV energy (700~kWh) is dispatched in full in every case. Under the time-varying tariff the battery charges 210.5~kWh and discharges 190~kWh; under the flat price it is not cycled at all, because without price differences the round-trip losses make storage arbitrage unprofitable. All values refer to the MILP approximation.
+\subsection{The Value of Coordination (E1, E6)}
+Table~\ref{tab:arrangements} compares the arrangements. Under the flat tariff the water operator needs
+9 pump-hours and, holding its level, places 2~h at 0.08, 5~h at 0.16, 2~h at 0.32 (unit/kWh);
+the site's day-ahead cost is 107.94/day. The integrated optimum pumps 3~h at 0.08, 6~h at 0.16, 0~h at 0.32 and costs 90.91/day,
+a coordination gain $\mathcal{G}=17.03$/day, 15.8\% of the site's bill and
+46\% of the water operator's baseline pumping bill of 37.37/day.
+Figure~\ref{fig:computed} shows how the gain is earned: the coordinated schedule places 5 of its 9 pump-hours in the export and idle hours, where the site's own energy is cheapest, and none in the peak block at 0.32; the baseline, holding its level, places 4 in the surplus hours and 2 in the peak block, which the grid serves at the peak price.
+
+The internal price $\pi^\star_t$ of the restricted LP follows Proposition~\ref{prop:price}: in the 15 hours in which the site imports it equals the purchase price; in the 6 export hours (hours 9, 10, 11, 12, 13, and 14) it equals the sale price 0.03; in the 3 idle hours (hours 7, 8, and 16) it lies inside the band $[c^{\mathrm{sell}}_t, c^{\mathrm{buy}}_t]$, set by the battery's intertemporal arbitrage. Passing the purchase price through to the water operator captures 95.6\% of the gain: the water operator then avoids the peak block but places only 5 pump-hours in the surplus hours, having no reason to prefer them over the other hours of the same purchase price. Charging the internal price itself captures 98.2\%: the water operator is indifferent among equally priced hours, and the tie it happened to break is not the one the energy operator can serve most cheaply (Proposition~\ref{prop:tariff}).
 
 \begin{table}[!t]
-\caption{Computed Schedules. Costs Are in Synthetic Currency Units; the Flat-Price Case Uses a Different Tariff. Solve Time Is Wall-Clock Solver-Call Time on the Recorded Machine}
-\label{tab:computed}
+\caption{Arrangements Compared (Unit/Day). Gain and Capture Are Relative to the Baseline}
+\label{tab:arrangements}
 \centering
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}lrrrrr@{}}
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{@{}lrrrrrr@{}}
 \toprule
-Case & Cost & On (h) & Import (kWh) & Peak (kW) & Solve (s) \\
+Arrangement & Cost & Gain & Capt.\ (\%) & On (h) & Import & Export \\
 \midrule
-Independent & 2943.26 & 9 & 16954.05 & 920.0 & 0.07 \\
-Joint & 2941.18 & 9 & 16954.05 & 915.9 & 4.25 \\
-Joint, flat price & 1693.35 & 9 & 16933.53 & 960.0 & 2.66 \\
+Baseline: flat tariff, level holding & 107.94 & 0.00 & 0.0 & 9 & 856 & 212 \\
+Pass-through tariff $\tau_t=c^{\mathrm{buy}}_t$ & 91.66 & 16.28 & 95.6 & 9 & 830 & 201 \\
+Internal-price tariff $\tau_t=\pi^\star_t$ & 91.21 & 16.73 & 98.2 & 9 & 830 & 216 \\
+Integrated optimum (contract) & 90.91 & 17.03 & 100.0 & 9 & 830 & 226 \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-The joint model has 3219 variables and 2598 constraints.
-All three coupled solves and the independent water-only solve terminated as optimal at the $10^{-4}$ gap tolerance. The water-only solve took 0.43~s. The run directory
-records full-precision dispatch, inventory trajectories, solver logs,
-algebraic residuals (maximum constraint violation below $5\times10^{-6}$), the
-input configuration, dependency versions, and input and source hashes.
-Timing includes the Pyomo interface overhead and is not an isolated solver
-benchmark.
 
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\columnwidth]{coordination_results.pdf}
-\caption{Purchase price and optimized schedules for the independent baseline and joint scheduling: pump electrical load, tank water level, and grid import. Tank markers are inventory boundaries; power values apply over the following hourly interval. The dotted line marks the initial level, which the terminal level must reach.}
+\caption{Baseline versus coordinated operation. Top to bottom: purchase and sale prices with the internal price
+$\pi^\star_t$; pump load; tank level (markers are inventory boundaries, the dotted line the initial level); net import
+at the connection (negative is export).}
 \label{fig:computed}
 \end{figure}
 
-\subsection{Independent Nonlinear Replay}
-Each optimized pump schedule is replayed in EPANET with a five-minute
-hydraulic time step and hourly reports, the original level controls being
-replaced by the hourly commands. The optimized net bus injections are
-replayed as balanced constant-power snapshots in OpenDSS, which retains the
-nonlinear AC behavior of the original circuit whereas the MILP neglects
-series losses and shunt effects. The electrical replay keeps the fixed
-on-state pump-power coefficient and therefore does not validate the pump
-energy calibration. Table~\ref{tab:replay} summarizes the discrepancies.
+\subsection{Dividing the Gain (E2)}
+Table~\ref{tab:payoffs} lists the payoffs. Because the site is a net importer, the settlement is negative
+($R^\star=-90.91$/day), and the contract is read as bill sharing: with the fee anchored on the baseline,
+$F(\varphi)=\mathrm{bill}^0+\varphi R^0$, the water operator's payoff rises by $\varphi\mathcal{G}$ and the energy
+operator's by $(1-\varphi)\mathcal{G}$ at every share (Corollary~\ref{cor:window}). At the equal split $\varphi=1/2$
+the fee is -16.60/day and each operator gains 8.51/day; for that share any fee in
+$[-25.11,\,-8.09]$ leaves both operators no worse off than the baseline, an interval of width
+$\mathcal{G}$. The deviation test in Table~\ref{tab:deviation} evaluates the water operator's contract payoff at
+$\varphi=1/2$ if it ran one of the other schedules instead, with the energy operator responding optimally: every
+deviation loses, as Theorem~\ref{thm:contract} requires.
 
 \begin{table}[!t]
-\caption{Replay of the Optimized Schedules in EPANET and OpenDSS}
+\caption{Daily Payoffs by Arrangement (Unit/Day); Fee Anchored on the Baseline}
+\label{tab:payoffs}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}lrrrrrrr@{}}
+\toprule
+Arrangement & $\varphi$ & $F$ & $\Pi_{\mathrm{W}}$ & $\Pi_{\mathrm{E}}$ & $\Pi$ & $\Delta\Pi_{\mathrm{W}}$ & $\Delta\Pi_{\mathrm{E}}$ \\
+\midrule
+Baseline (flat tariff) & -- & -- & -37.37 & -70.57 & -107.94 & -- & -- \\
+Contract & 0.00 & 37.37 & -37.37 & -53.54 & -90.91 & +0.00 & +17.03 \\
+Contract & 0.50 & -16.60 & -28.85 & -62.05 & -90.91 & +8.51 & +8.51 \\
+Contract & 1.00 & -70.57 & -20.34 & -70.57 & -90.91 & +17.03 & +0.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!t]
+\caption{Water Operator's Contract Payoff at $\varphi=1/2$ for Alternative Schedules (Unit/Day)}
+\label{tab:deviation}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Schedule run by W & $\Pi_{\mathrm{W}}$ & Deviation gain \\
+\midrule
+Baseline: flat tariff, level holding & -37.37 & -8.51 \\
+Pass-through tariff $\tau_t=c^{\mathrm{buy}}_t$ & -29.23 & -0.38 \\
+Internal-price tariff $\tau_t=\pi^\star_t$ & -29.00 & -0.15 \\
+Integrated optimum (contract) & -28.85 & +0.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Distributed Computation (E4)}
+Table~\ref{tab:coordination} and Fig.~\ref{fig:convergence} summarize the price coordination runs. Started from the
+energy operator's marginal cost of serving the metered baseline schedule, the first message of the recommended protocol, the
+scheme certifies a gap of 0.72\% after the first exchange, the recovered schedule attains the
+integrated optimum at iteration 2, and the bundle master stops after 7 iterations, when its model
+predicts no further improvement at the exchanged price resolution, with a dual bound of 90.55/day and a
+certified gap of 0.39\%. Started from the market price instead, the first exchange certifies only
+8.18\%, because the purchase price leaves the energy operator indifferent in every import hour;
+the scheme attains the optimum at iteration 7, reaches a 1\% certificate at iteration 17,
+and ends after 29 iterations with a gap of 0.02\%. The subgradient rule from the
+marginal-cost start attains the optimum at iteration 2 and reaches a gap of 0.39\% after
+15 iterations. Evaluating the dual function at the restricted-LP prices $\pi^\star$ gives $D(\pi^\star)=90.91$/day against $C^\star=90.91$/day: the Lagrangian relaxation of the interface has no duality gap on this instance (Proposition~\ref{prop:convergence}(iv)), so the residual certified gap of the runs is the price of finite iterations, quantized prices, and subproblem tolerances, not a structural limit. For comparison, the central solver's own bound on the integrated MILP is
+90.90, a gap of 0.003\%, and it holds both operators' data. Each iteration exchanges 48 scalars; no demand forecast, tank state, pump
+characteristic, PV forecast, battery state, or market position crosses the boundary.
+
+\begin{table}[!t]
+\caption{Price Coordination Runs: Iterations, Messages, Certified Dual and Primal Values, Final Gap, the Iteration at Which the Recovered Schedule First Attains the Integrated Optimum, and Wall Time}
+\label{tab:coordination}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{@{}lrrrrrrr@{}}
+\toprule
+Run & Iter. & Msgs & Dual & Primal & Gap \% & Opt.\ at & Min \\
+\midrule
+Bundle, marginal-cost start & 7 & 336 & 90.55 & 90.91 & 0.39 & 2 & 4.5 \\
+Bundle, market-price start & 29 & 1392 & 90.89 & 90.91 & 0.02 & 7 & 57.2 \\
+Subgradient, marginal-cost start & 15 & 720 & 90.55 & 90.91 & 0.39 & 2 & 10.7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{convergence.pdf}
+\caption{Left: certified gap between the recovered primal value and the certified dual bound per iteration for the bundle
+master from the marginal-cost and market-price starts and for the subgradient rule. Right: internal-price iterates at three
+hours for the bundle run from the market-price start; thin lines mark the restricted-LP prices $\pi^\star_t$.}
+\label{fig:convergence}
+\end{figure*}
+
+\subsection{Connection-Limit Sensitivities (E5)}
+Table~\ref{tab:sweep} and Fig.~\ref{fig:sensitivity} vary the ratings of the connection. Tightening the import rating lowers the gain from 17.03/day at 150~kW to 10.92/day at 70~kW; at 100~kW and below the internal price departs from the market price in hours 21, 22, and 23, where the rating binds. No schedule is feasible at 60~kW. Tightening the export rating lowers the gain from 17.03/day at 50~kW to 16.61/day at 0~kW: with less room to export, both schedules absorb more of the midday surplus on site, and the internal price in the curtailment hours falls to the marginal value of spilled energy, zero, for the coordinated schedule and the baseline alike.
+
+\begin{table}[!t]
+\caption{Connection-Limit Sweeps (Unit/Day). ``Off Reference'' Lists the Non-Idle Hours in Which the Internal Price Departs from the Market Price of the Connection's Direction}
+\label{tab:sweep}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrrrp{2.2cm}@{}}
+\toprule
+Limit & kW & Baseline & Integrated & Gain & Off reference \\
+\midrule
+Import & 150 & 107.94 & 90.91 & 17.03 & none \\
+Import & 125 & 107.94 & 90.91 & 17.03 & none \\
+Import & 100 & 110.28 & 98.67 & 11.61 & hours 21, 22, and 23 \\
+Import & 90 & 116.54 & 105.12 & 11.43 & hours 21, 22, and 23 \\
+Import & 80 & 122.99 & 111.75 & 11.24 & hours 5, 21, 22, and 23 \\
+Import & 70 & 129.57 & 118.64 & 10.92 & hours 5, 6, 21, 22, and 23 \\
+Import & 60 & infeasible & infeasible & -- & -- \\
+Export & 50 & 107.94 & 90.91 & 17.03 & none \\
+Export & 25 & 110.26 & 93.18 & 17.09 & hours 9, 10, 11, 12, 13, and 14 \\
+Export & 0 & 114.29 & 97.68 & 16.61 & none \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{sensitivity.pdf}
+\caption{Coordination gain versus the import rating (left) and the export rating (right) of the connection. Shaded bands
+mark ratings at which only coordinated operation is feasible or no schedule is feasible.}
+\label{fig:sensitivity}
+\end{figure*}
+
+\subsection{Independent Nonlinear Replay (E3)}
+The baseline and coordinated pump schedules are replayed in EPANET with a five-minute hydraulic time step and hourly
+reports, the level controls of the input file being replaced by the hourly commands, and the optimized net bus injections
+are solved as balanced constant-power snapshots in OpenDSS. Table~\ref{tab:replay} summarizes the discrepancies.
+Both schedules satisfy the pressure floor and the voltage band at every report time and the imposed pump statuses match the
+MILP decisions. The replay ends with the tank 0.137~m (baseline) and 0.124~m (coordinated) below its initial level despite the replenishment constraint \eqref{eq:w_tank_terminal}, so the hourly hydraulic approximation does not preserve the terminal requirement exactly. The electrical discrepancies are small because the feeder is short and lightly loaded,
+the regime in which the flat-voltage linearization is most accurate. Report-time checks do not certify feasibility between
+reports; the results support the schedules as planning-stage outputs, not as a certification for field operation.
+
+\begin{table}[!t]
+\caption{Replay of the Baseline and Coordinated Schedules in EPANET and OpenDSS}
 \label{tab:replay}
 \centering
 \footnotesize
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{@{}lrr@{}}
 \toprule
-Metric & Independent & Joint \\
+Metric & Baseline & Coordinated \\
 \midrule
-Minimum junction pressure (m) & 25.06 & 25.07 \\
+Minimum junction pressure (m) & 25.92 & 25.03 \\
 Pressure violations at report times & 0 & 0 \\
 Pump-status mismatches at report times & 0 & 0 \\
-Maximum tank-head discrepancy (m) & 0.154 & 0.135 \\
-Maximum flow discrepancy (L/s) & 0.466 & 0.437 \\
-Terminal tank-head change vs.\ initial (m) & $-0.114$ & $-0.067$ \\
+Maximum tank-head discrepancy (m) & 0.139 & 0.125 \\
+Maximum flow discrepancy (L/s) & 0.350 & 0.374 \\
+Terminal tank-head change vs.\ initial (m) & $-0.137$ & $-0.124$ \\
 All OpenDSS snapshots converged & yes & yes \\
-Maximum voltage discrepancy (p.u.) & 0.00034 & 0.00034 \\
+Maximum voltage discrepancy (p.u.) & 0.00002 & 0.00003 \\
 Voltage violations & 0 & 0 \\
-Peak line loading (\%) & 1.31 & 1.29 \\
-Maximum grid-import discrepancy (kW) & 0.005 & 0.005 \\
+Peak line loading (\%) & 0.17 & 0.19 \\
+Maximum grid-exchange discrepancy (kW) & 0.000 & 0.000 \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-Both schedules satisfy the pressure floor and the voltage band at every report time, and the pump statuses imposed in EPANET match the MILP decisions. Tank-head and flow discrepancies remain below 0.16~m and 0.47~L/s. The electrical discrepancies are small because the feeder is lightly loaded and the circuit is short, which is the regime in which the flat-voltage linearization is most accurate. The replay, however, ends with the tank 0.114~m (independent) and 0.067~m (joint) below its initial level despite the MILP replenishment constraint \eqref{eq:w_tank_terminal}. The hourly hydraulic approximation therefore does not preserve the terminal requirement exactly, and a reserve margin or a simulation-informed refinement of \eqref{eq:w_tank} is needed before operational use. Hourly
-report checks do not certify feasibility between reports. These results
-support the formulation as a scheduling prototype with explicit simulation
-checks; they are not a certification for field operation.

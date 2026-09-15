@@ -24,6 +24,7 @@ from .helpers.water.hydraulic_utils import (
     create_piecewise_pump_curve,
     add_pwl_constraint,
     pump_head_and_slope,
+    pump_flow_at_head,
 )
 from .helpers.energy.power_utils import (
     calc_line_admittance,
@@ -33,7 +34,60 @@ from .helpers.energy.power_utils import (
 
 
 _MAX_FLOW = 5.0    # m³/s — loose upper bound for water big-M and variable bounds
-_MAX_HEAD = 500.0  # metres
+_MAX_HEAD = 500.0  # metres — fallback ceiling when no network-derived bound exists
+
+
+def _network_head_ceiling(wn: "wntr.network.WaterNetworkModel", T: int) -> float:
+    """Valid upper bound on every nodal head over the horizon.
+
+    Head can only be added by pumps and only decreases along the direction of
+    flow, so no node can sit above the highest source (reservoir head or tank
+    ceiling) plus the sum of the pump shutoff heads. The bound is used for the
+    head variables and, following MILPNet, as the big-M of the pump and valve
+    disjunctions; a tight M strengthens the LP relaxation of every solver.
+    """
+    sources = [float(wn.get_node(r).head_timeseries.at(t * 3600))
+               for r in wn.reservoir_name_list for t in range(T)]
+    sources += [float(wn.get_node(k).elevation + wn.get_node(k).max_level) for k in wn.tank_name_list]
+    shutoff = 0.0
+    for name, pump in wn.pumps():
+        try:
+            shutoff += max(0.0, float(pump_head_and_slope(pump, 0.0)[0]))
+        except ValueError:
+            shutoff += float(max(h for _, h in pump.get_pump_curve().points))
+    if not sources:
+        return _MAX_HEAD
+    ceiling = 1.05 * (max(sources) + shutoff) + 1.0
+    return float(min(max(ceiling, 1.0), _MAX_HEAD))
+
+
+def _pump_price_table(spec, pumps, T: int, default: float = 0.1) -> dict:
+    """Return {(pump, t): price} from a scalar, a horizon list, or a per-pump mapping.
+
+    ``spec`` may be None (use ``default`` everywhere), a number, a list of T
+    prices applied to every pump, or a mapping pump -> number or list of T
+    prices. Prices are the electricity prices the water operator faces for
+    its metered pump load in each interval (currency per kWh).
+    """
+    def horizon(values, label):
+        if np.isscalar(values):
+            return [float(values)] * T
+        values = [float(v) for v in values]
+        if len(values) != T or not all(np.isfinite(v) for v in values):
+            raise ValueError(f"{label} must contain {T} finite hourly prices.")
+        return values
+    if spec is None:
+        spec = default
+    if isinstance(spec, dict):
+        table = {}
+        for p in pumps:
+            if p not in spec:
+                raise ValueError(f"pump_energy_price lacks an entry for pump {p!r}.")
+            series = horizon(spec[p], f"pump_energy_price[{p}]")
+            table.update({(p, t): series[t] for t in range(T)})
+        return table
+    series = horizon(spec, "pump_energy_price")
+    return {(p, t): series[t] for p in pumps for t in range(T)}
 
 
 def _linearize_hw(K: float, Q0: float, range_Q: float = None):
@@ -124,17 +178,61 @@ def build_model(data: dict, config: dict) -> pyo.ConcreteModel:
     return model
 
 
+def solver_gap_options(solver: str, rel_gap: float = None, abs_gap: float = None) -> dict:
+    """Solver-specific option names for the MIP optimality-gap tolerances."""
+    options = {}
+    if solver.startswith("gurobi"):
+        if rel_gap is not None:
+            options["MIPGap"] = rel_gap
+        if abs_gap is not None:
+            options["MIPGapAbs"] = abs_gap
+    elif solver in ("highs", "appsi_highs"):
+        if rel_gap is not None:
+            options["mip_rel_gap"] = rel_gap
+        if abs_gap is not None:
+            options["mip_abs_gap"] = abs_gap
+    elif solver == "cplex":
+        if rel_gap is not None:
+            options["mip_tolerances_mipgap"] = rel_gap
+        if abs_gap is not None:
+            options["mip_tolerances_absmipgap"] = abs_gap
+    elif solver == "cbc":
+        if rel_gap is not None:
+            options["ratioGap"] = rel_gap
+        if abs_gap is not None:
+            options["allowableGap"] = abs_gap
+    elif solver == "glpk":
+        if rel_gap is not None:
+            options["mipgap"] = rel_gap
+    return options
+
+
+def solver_default_options(solver: str) -> dict:
+    """Solver options used for every study solve.
+
+    HiGHS's default heuristic effort left several connection-rating instances
+    of the integrated MILP without any incumbent for 600 s; raising it makes
+    the solver find feasible schedules within seconds and prove optimality
+    in about a minute. Other solvers need nothing.
+    """
+    if solver in ("highs", "appsi_highs"):
+        return {"mip_heuristic_effort": 0.3}
+    return {}
+
+
 def solve_model(
     model: pyo.ConcreteModel,
     solver: str = "glpk",
     timeout: int = 300,
     logfile: str = None,
     tee: bool = False,
+    options: dict = None,
 ) -> tuple:
     """Solve a linear mixed-integer model and return (model, results, logfile).
 
     Solutions are loaded only when a solver returns an incumbent. An infeasible
     or unbounded model is returned without manufacturing variable values.
+    ``options`` are passed to the solver verbatim (see solver_gap_options()).
     """
     opt = SolverFactory(solver)
     if not opt.available(exception_flag=False):
@@ -157,6 +255,8 @@ def solve_model(
         opt.options["time_limit"] = timeout
         if logfile and solver == "highs":
             opt.options["log_file"] = str(logfile)
+    for key, value in (options or {}).items():
+        opt.options[key] = value
     logging.info("Solving with %s (timeout=%ss)", solver, timeout)
     results = opt.solve(model, tee=tee, load_solutions=False)
     if len(results.solution):
@@ -370,6 +470,13 @@ def _add_water_submodel(model: pyo.ConcreteModel, data: dict) -> None:
 
     model.TankArea = pyo.Param(model.Tanks, initialize=tank_areas)
 
+    # Network-derived head ceiling: bounds the head variables and sets the
+    # big-M of the pump/valve disjunctions (MILPNet: "just above the largest
+    # bound of the associated continuous variable").
+    head_ub = _network_head_ceiling(wn, T_val)
+    min_pressure = float(water_cfg.get("min_pressure_m", 0.0))
+    model.head_ceiling_m = head_ub
+
     # Variables
     if pipe_flows_sim:
         # Bound each pipe's flow to the direction and ~2× magnitude of the EPANET simulation.
@@ -388,14 +495,13 @@ def _add_water_submodel(model: pyo.ConcreteModel, data: dict) -> None:
             return (-_MAX_FLOW, _MAX_FLOW) if l in m.Pipes else (0, _MAX_FLOW)
 
     model.Q       = pyo.Var(model.Links, model.T, bounds=q_bounds, domain=pyo.Reals)
-    model.H       = pyo.Var(model.Nodes, model.T, bounds=(0, _MAX_HEAD), domain=pyo.NonNegativeReals)
+    model.H       = pyo.Var(model.Nodes, model.T, bounds=(0, head_ub), domain=pyo.NonNegativeReals)
     model.Status  = pyo.Var(model.Pumps, model.T, domain=pyo.Binary)
     model.SlackPos = pyo.Var(model.Junctions, model.T, domain=pyo.NonNegativeReals)
     model.SlackNeg = pyo.Var(model.Junctions, model.T, domain=pyo.NonNegativeReals)
     if not water_cfg.get("allow_demand_slack", False):
         model.SlackPos.fix(0.0)
         model.SlackNeg.fix(0.0)
-    min_pressure = float(water_cfg.get("min_pressure_m", 0.0))
     model.MinimumPressure = pyo.Constraint(
         model.Junctions, model.T,
         rule=lambda m, n, t: m.H[n, t] >= wn.get_node(n).elevation + min_pressure,
@@ -474,6 +580,7 @@ def _add_water_submodel(model: pyo.ConcreteModel, data: dict) -> None:
 
     # W5–W7 — Pump head-flow curve + ON/OFF coupling
     model.PumpHeadGain = pyo.Var(model.Pumps, model.T, domain=pyo.NonNegativeReals)
+    pump_flow_ceilings = {}
     if pump_flows_sim:
         # Linearize pump curve around the EPANET operating point, retaining ON/OFF status.
         for p in pumps:
@@ -486,19 +593,44 @@ def _add_water_submodel(model: pyo.ConcreteModel, data: dict) -> None:
                     pyo.Constraint(expr=model.PumpHeadGain[p, t] == c * model.Status[p, t] + d * model.Q[p, t])
                 )
     else:
-        # Binary SOS2 PWL fallback
+        # Binary SOS2 PWL fallback. The curve is interpolated over the
+        # hydraulically admissible flow range: a running pump must lift water
+        # at least from the highest head its suction node can take to the
+        # lowest head its discharge node may have (pressure floor or tank
+        # bottom), so flows beyond the curve point at that minimum gain are
+        # never feasible and would only weaken the LP relaxation.
+        def node_head_floor(n):
+            if n in junctions:
+                return wn.get_node(n).elevation + min_pressure
+            if n in tanks:
+                return min_levels[n]
+            return min(float(wn.get_node(n).head_timeseries.at(t * 3600)) for t in range(T_val))
+
+        def node_head_ceiling(n):
+            if n in tanks:
+                return max_levels[n]
+            if n in reservoirs:
+                return max(float(wn.get_node(n).head_timeseries.at(t * 3600)) for t in range(T_val))
+            return head_ub
+
         for p in pumps:
-            pts = create_piecewise_pump_curve(wn.get_link(p), num_segments=6)
+            up, down = link_map[p]
+            min_gain = max(0.0, node_head_floor(down) - node_head_ceiling(up))
+            pump_link = wn.get_link(p)
+            ceiling = pump_flow_at_head(pump_link, min_gain) if min_gain > 0 else None
+            pts = create_piecewise_pump_curve(pump_link, num_segments=6, max_flow=ceiling)
+            pump_flow_ceilings[p] = pts[-1][0]
             for t in model.T:
                 add_pwl_constraint(model, f"pwl_pump_{p}_{t}", model.Q[p, t], model.PumpHeadGain[p, t], pts, activation=model.Status[p, t])
 
+    model.pump_flow_ceiling_m3s = dict(pump_flow_ceilings)
     model.PumpStatusFlow = pyo.Constraint(
         model.Pumps, model.T,
-        rule=lambda m, p, t: m.Q[p, t] <= _MAX_FLOW * m.Status[p, t]
+        rule=lambda m, p, t: m.Q[p, t] <= pump_flow_ceilings.get(p, _MAX_FLOW) * m.Status[p, t]
     )
 
-    # With zero head gain while OFF, head differences are bounded by _MAX_HEAD.
-    _M = _MAX_HEAD
+    # With zero head gain while OFF, head differences are bounded by the head ceiling.
+    _M = head_ub
     model.PumpHeadCoup1 = pyo.Constraint(
         model.Pumps, model.T,
         rule=lambda m, p, t: -_M * (1 - m.Status[p, t]) <= m.H[link_map[p][1], t] - m.H[link_map[p][0], t] - m.PumpHeadGain[p, t]
@@ -519,7 +651,6 @@ def _add_water_submodel(model: pyo.ConcreteModel, data: dict) -> None:
         rule=lambda m, v, t: m.ValveV1[v, t] + m.ValveV2[v, t] + m.ValveV3[v, t] == 1
     )
 
-    _M_valve = 1000.0
     _eps_flow = 0.0
     _eps_head = 0.0
 
@@ -533,6 +664,9 @@ def _add_water_submodel(model: pyo.ConcreteModel, data: dict) -> None:
             valve_settings[v] = end_node.elevation + valve_obj.setting
         else:
             valve_settings[v] = 0.0
+    # Heads lie in [0, head_ub], so head differences and setting offsets are
+    # covered by head_ub plus the largest setting.
+    _M_valve = head_ub + max(valve_settings.values(), default=0.0)
 
     model.ValveFlowLower = pyo.Constraint(
         model.Valves, model.T,
@@ -576,13 +710,43 @@ def _add_water_submodel(model: pyo.ConcreteModel, data: dict) -> None:
         powers = _pump_mean_powers(inp_file, T_val, pumps,
                                   float(water_cfg.get("pump_efficiency", 1.0)), epanet_sim)
     model.pump_mean_power_kw = powers
-    energy_price = float(water_cfg.get("pump_energy_tariff", 0.1))
+    # Electricity price the water operator faces for its metered pump load. A
+    # scalar is the flat retail tariff of the stand-alone problem; a horizon
+    # list or per-pump mapping is the time-varying (internal) price used by
+    # the decentralized coordination scheme (see src/coordination.py).
+    dt_h = float(pyo.value(model.dt)) / 3600.0
+    price = _pump_price_table(
+        water_cfg.get("pump_energy_price"), pumps, T_val,
+        default=float(water_cfg.get("pump_energy_tariff", 0.1)),
+    )
+    model.pump_energy_price = price
+    model.pump_energy_cost = pyo.Expression(rule=lambda m: dt_h * sum(
+        powers[p] * price[p, t] * m.Status[p, t] for p in m.Pumps for t in m.T))
+    # Optional level-holding tie-break (weight in currency per metre-hour):
+    # among schedules of equal energy cost, prefer the one that keeps each
+    # tank closest to its initial level. This is the discrete analogue of
+    # "float" operation and makes the flat-tariff baseline reproducible; the
+    # weight must be too small to trade against one pump-hour of energy.
+    tracking_weight = float(water_cfg.get("level_tracking_weight", 0.0))
+    if tracking_weight < 0:
+        raise ValueError("level_tracking_weight must be nonnegative.")
+    if tracking_weight > 0:
+        model.TankDevPos = pyo.Var(model.Tanks, model.T, domain=pyo.NonNegativeReals)
+        model.TankDevNeg = pyo.Var(model.Tanks, model.T, domain=pyo.NonNegativeReals)
+        model.TankDeviation = pyo.Constraint(
+            model.Tanks, model.T,
+            rule=lambda m, n, t: m.H[n, t] - initial_levels[n] == m.TankDevPos[n, t] - m.TankDevNeg[n, t])
+        model.level_tracking_cost = pyo.Expression(rule=lambda m: tracking_weight * sum(
+            m.TankDevPos[n, t] + m.TankDevNeg[n, t] for n in m.Tanks for t in m.T))
+    else:
+        model.level_tracking_cost = pyo.Expression(expr=0.0)
     model.water_cost = pyo.Expression(rule=lambda m: (
-        sum(powers[p] * m.Status[p, t] * energy_price for p in m.Pumps for t in m.T)
+        m.pump_energy_cost + m.level_tracking_cost
         + sum(1e9 * (m.SlackPos[n, t] + m.SlackNeg[n, t]) for n in m.Junctions for t in m.T)
     ))
 
-    logging.info(f"Water sub-model: {len(nodes)} nodes, {len(links)} links, {len(pumps)} pumps")
+    logging.info(f"Water sub-model: {len(nodes)} nodes, {len(links)} links, {len(pumps)} pumps "
+                 f"(head ceiling {head_ub:.1f} m)")
 
 
 # ---------------------------------------------------------------------------
@@ -748,11 +912,18 @@ def _add_energy_submodel(model: pyo.ConcreteModel, data: dict) -> None:
     model.energy_cost = pyo.Expression(expr=dt_h * sum(
         tariff[t] * model.P_import[b, t] - export_tariff[t] * model.P_export[b, t]
         for b in buses for t in times))
+    # Day-ahead prices and the metered-load hook, kept for the coordination layer.
+    model.import_price = list(tariff)
+    model.export_price = list(export_tariff)
+    model.pump_bus_capacity_kw = {b: 0.0 for b in buses}
     logging.info("Energy sub-model: %d buses, %d lines", len(buses), len(line_params))
 
 # ---------------------------------------------------------------------------
 # Nexus coupling
 # ---------------------------------------------------------------------------
+
+PUMP_POWER_RESOLUTION_KW = 0.01  # calibrated on-state powers are rounded to 10 W
+
 
 def _pump_mean_powers(
     inp_file: str,
@@ -760,13 +931,18 @@ def _pump_mean_powers(
     pump_names,
     pump_efficiency: float = 1.0,
     epanet_sim: dict = None,
+    resolution_kw: float = PUMP_POWER_RESOLUTION_KW,
 ) -> dict:
     """Per-pump mean electrical power [kW], reusing the shared EPANET sim if present.
 
     Prefers the pre-simulation cached on data['water']['epanet_sim'] (run once in
     preprocessing). Only when that cache is absent — or lacks headloss — does it
     simulate the network here. Either way the reduction is the Thomas & Sela
-    (MILPNet) convention implemented in _mean_pump_powers_from_sim().
+    (MILPNet) convention implemented in _mean_pump_powers_from_sim(). The
+    result is rounded to ``resolution_kw`` (10 W by default): the calibration
+    is not more accurate than that, and rounded coefficients let MILP solvers
+    recognise the integrality of the pump-energy objective, which shortens the
+    proof of optimality considerably.
 
     Args:
         inp_file:         EPANET .inp path (used only on the fallback sim path).
@@ -782,11 +958,16 @@ def _pump_mean_powers(
     if not pump_names:
         return {}
 
+    def rounded(powers):
+        if resolution_kw and resolution_kw > 0:
+            return {p: round(v / resolution_kw) * resolution_kw for p, v in powers.items()}
+        return powers
+
     if epanet_sim is not None and "headloss" in epanet_sim:
         logging.info("Nexus: reusing shared EPANET pre-simulation for pump power")
-        return _mean_pump_powers_from_sim(
+        return rounded(_mean_pump_powers_from_sim(
             epanet_sim["flowrate"], epanet_sim["headloss"], pump_names, pump_efficiency
-        )
+        ))
 
     # Fallback: simulate on demand (no cache, or cache without headloss).
     import os
@@ -799,13 +980,53 @@ def _pump_mean_powers(
         with tempfile.TemporaryDirectory(prefix="econex-pump-power-") as sim_dir:
             res = wntr.sim.EpanetSimulator(wn).run_sim(file_prefix=str(Path(sim_dir) / "network"))
         logging.info("Nexus: EPANET on-demand sim for pump power (no shared cache)")
-        return _mean_pump_powers_from_sim(
+        return rounded(_mean_pump_powers_from_sim(
             res.link["flowrate"], res.link["headloss"], pump_names, pump_efficiency
-        )
+        ))
     except Exception as exc:
         raise RuntimeError("Pump power calibration failed; provide valid hydraulic simulation data.") from exc
     finally:
         os.chdir(cwd)
+
+
+def pump_coupling(data: dict, config: dict) -> dict:
+    """Calibrated pump powers, pump-to-bus assignment, and per-bus pump capacity.
+
+    The same calibration and assignment rules as _add_nexus_constraints(), made
+    available to the coordination layer without building the coupled model:
+    ``powers`` [kW] per pump, ``pump_bus`` per pump, ``bus_capacity_kw`` per
+    electrical bus (sum of the powers of the pumps it supplies), and
+    ``pump_buses`` (buses with at least one pump).
+    """
+    if "water" not in data or "energy" not in data:
+        raise ValueError("pump_coupling needs both water and energy data.")
+    T = int(config.get("T", 24))
+    nexus_cfg = config.get("nexus", {}) or {}
+    pump_eff = float(nexus_cfg.get("pump_efficiency", 1.0))
+    if not 0 < pump_eff <= 1:
+        raise ValueError("Pump efficiency must lie in (0, 1].")
+    inp_file = data["water"]["inp_file"]
+    pumps = list(wntr.network.WaterNetworkModel(inp_file).pump_name_list)
+    powers = dict(nexus_cfg.get("pump_power_kw", {}) or {})
+    if not powers:
+        powers = _pump_mean_powers(inp_file, T, pumps, pump_eff, data["water"].get("epanet_sim"))
+    if any(p not in powers or not np.isfinite(powers[p]) or powers[p] <= 0 for p in pumps):
+        raise ValueError("Every pump needs positive calibrated power; use nexus.pump_power_kw "
+                         "for pumps that do not operate in the reference simulation.")
+    buses = list(data["energy"]["buses"])
+    ref_bus = data["energy"].get("network", {}).get("reference_bus", buses[0])
+    assignment = dict(nexus_cfg.get("pump_bus", {}) or {})
+    pump_bus = {}
+    for p in pumps:
+        b = assignment.get(p, ref_bus)
+        if b not in buses:
+            raise ValueError(f"Pump {p!r} is mapped to unknown electrical bus {b!r}.")
+        pump_bus[p] = b
+    capacity = {b: 0.0 for b in buses}
+    for p, b in pump_bus.items():
+        capacity[b] += float(powers[p])
+    return {"powers": {p: float(powers[p]) for p in pumps}, "pump_bus": pump_bus,
+            "bus_capacity_kw": capacity, "pump_buses": [b for b in buses if capacity[b] > 0]}
 
 
 def _add_nexus_constraints(model: pyo.ConcreteModel, data: dict, config: dict) -> None:
@@ -880,6 +1101,7 @@ def _add_nexus_constraints(model: pyo.ConcreteModel, data: dict, config: dict) -
     # Updating the named Expression body propagates into the already-built nodal balance.
     model.pump_mean_power_kw = dict(mean_powers)  # stash for postprocessing/logging
     model.pump_bus = {p: b for b, pump_list in bus_pumps.items() for p in pump_list}
+    model.pump_bus_capacity_kw = {b: sum(mean_powers[p] for p in bus_pumps[b]) for b in buses}
     for b in buses:
         for t in model.T:
             model.PumpBusLoad[b, t].set_value(
@@ -887,11 +1109,12 @@ def _add_nexus_constraints(model: pyo.ConcreteModel, data: dict, config: dict) -
             )
 
     # Drop standalone pump electricity cost from the water objective (now priced via
-    # the energy import tariff); keep only the demand-slack penalty.
+    # the energy import tariff); keep the demand-slack penalty and any tie-break.
     if hasattr(model, "water_cost"):
         model.water_cost.set_value(
-            sum(1e9 * (model.SlackPos[n, t] + model.SlackNeg[n, t])
-                for n in model.Junctions for t in model.T)
+            model.level_tracking_cost
+            + sum(1e9 * (model.SlackPos[n, t] + model.SlackNeg[n, t])
+                  for n in model.Junctions for t in model.T)
         )
 
     total_kw = sum(mean_powers.values())

@@ -1,5 +1,6 @@
-# Versions used for the paper run; Python 3.12.10 on macOS arm64.
+# Versions used for the two-operator paper run (HiGHS 1.11.0; Python 3.11 on Linux x86_64).
 # Gurobi is optional and requires a separate installation/license.
+# Do not upgrade highspy without re-checking its bounds (see README).
 numpy==2.4.0
 pandas==2.3.0
 scipy==1.15.2
